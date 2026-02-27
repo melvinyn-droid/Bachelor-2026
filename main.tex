@@ -13,6 +13,7 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{csquotes}
+\usepackage{subfiles}
 \usepackage{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 
@@ -34,8 +35,8 @@
 \tableofcontents
 \newpage
 
-\input{Teori/Numerisk Ustabilitet}
-\input{Teori/HRP Teori}
+\subfile{Teori/Numerisk Ustabilitet}
+\subfile{Teori/HRP Teori}
 
 \bibliographystyle{plain}
 \bibliography{references}
