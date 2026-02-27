@@ -1,14 +1,43 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\documentclass[a4paper,11pt]{article}
 
-\title{Bachelor 20265}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[danish]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{csquotes}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\addto\captionsdanish{\renewcommand{\contentsname}{Indhold}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!50!black,
+    citecolor=blue!50!black,
+    urlcolor=blue!50!black
+}
+
+\title{Bachelor 2026}
 \author{Melvin Carl Yndeheim}
-\date{November 2025}
+\date{\today}
 
 \begin{document}
 
 \maketitle
+\tableofcontents
+\newpage
 
-\section{Introduction}
+\input{Teori/Numerisk Ustabilitet}
+\input{Teori/HRP Teori}
+
+\bibliographystyle{plain}
+\bibliography{references}
 
 \end{document}

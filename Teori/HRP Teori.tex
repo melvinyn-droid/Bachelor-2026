@@ -1,8 +1,4 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
-\usepackage{amsmath}
-
-\begin{document}
+\section{HRP teori}
 \subsection{Hierakisk Klyngedannelse}
 Klyngedannelse, også kaldet clustering, er en metode inden for matematik og statistik, hvis formål er  at organisere og finde mønstre i data som herefter kan analyseres. Ideen med klyngedannelse, er at opdele et antal observationer i grupper, også kaldet klynger. Den generelle ide er at opdele observationerne i klynger, baseret på hvor meget de "ligner" hindanen. For alle typer klynge-metoder er grupperingen baseret på en valgt afstandsmåling.  Euklidisk-afstand, Manhattan-afstand og korrelationsbaserede afstande kan alle være fornuftige at bruge afhænigt af hvilket type problem det er man vil løse. Dette valg har stor betydning og vil påvirke strukturen, størrelsen af klyngerne, samt beregningskompleksiteten af algoritmen. I alle typer klyngedannelsesmetoder kræves det at tage tre beslutninger:
 
@@ -16,44 +12,35 @@ En af de mest udbredte klyngedannelsesalgortimer er "K-means clustering", som er
 
 Hierarkisk klyngedannelsesaloritmer er enten divisiv eller agglomerativ. Begge metoder har hver deres fordele, men i praksis bruges den agglomerative metode mest i akedemiske sammenhæng. Da HRP også anvender agglomerativ klyngedannelse, fokuserer vi udelukkende på denne metode. Den agglomerative metode (bottom up) starter med enkeltpunkter og iterativt forbinder klynger, indtil alle observationer til sidst sammensættes til en stor klynge, sammensat af alle observationer. Dette er også kaldet "Tree-Clustering" da det grafisk ligner et stamtræ. Mere præcist danner det en graf kaldet et dendrogram.
 
-Formelt set, kan hierakisk klyngedannelse formuleres vha. et datasæt, med punkter givet ved:
+Formelt set kan hierakisk klyngedannelse formuleres vha. et datasæt med punkter
+givet ved:
 \begin{equation}
-[
-X = {x_1, x_2, \dots, x_n}, \quad x_i \in \mathbb{R}^d
-]
+X = \{x_1, x_2, \dots, x_n\}, \quad x_i \in \mathbb{R}^d
 \end{equation}
-Lad \begin{equation}
-    (D = (d_{ij})) 
+Lad
+\begin{equation}
+D = (d_{ij})
 \end{equation}
 være en afstandsmatrice, hvor
 \begin{equation}
-[
 d_{ij} = d(x_i, x_j)
-]
 \end{equation}
-er en metrisk afstand.\\
+er en metrisk afstand.
 
-Man starter med (n) klynger:
+Man starter med $n$ klynger:
 \begin{equation}
-[
-C_1 = {x_1}, \dots, C_n = {x_n}
-]
+C_1 = \{x_1\}, \dots, C_n = \{x_n\}
 \end{equation}
-Herefter finder man de to klynger (C_a) og (C_b), der har kortest/mindst afstand:
+Herefter finder man de to klynger $C_a$ og $C_b$, der har kortest/mindst afstand:
 \begin{equation}
-[
 (C_a, C_b) = \arg\min_{C_i \neq C_j} d(C_i, C_j)
-]
 \end{equation}
 Man erstater dem med den samlede klynge:
 \begin{equation}
-[
 C_{ab} = C_a \cup C_b
-]
 \end{equation}
 Man opdaterer afstandene og beregner nu afstanden mellem den nye klynge og de øvrige.
 
 Man gentager nu processen indtil alle observationer er samlet i en klynge.
 
 \subsubsection{Klyngeafstandsmål}
-\end{document}
