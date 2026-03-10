@@ -2,12 +2,12 @@
 \begin{document}
 \section{HRP teori}
 \subsection{Hierakisk Klyngedannelse}
-Klyngedannelse, også kaldet clustering, er en metode inden for matematik og statistik, hvis formål er  at organisere og finde mønstre i data som herefter kan analyseres. Ideen med klyngedannelse, er at opdele et antal observationer i grupper, også kaldet klynger. Den generelle ide er at opdele observationerne i klynger, baseret på hvor meget de "ligner" hindanen. For alle typer klynge-metoder er grupperingen baseret på en valgt afstandsmåling.  Euklidisk-afstand, Manhattan-afstand og korrelationsbaserede afstande kan alle være fornuftige at bruge afhænigt af hvilket type problem det er man vil løse. Dette valg har stor betydning og vil påvirke strukturen, størrelsen af klyngerne, samt beregningskompleksiteten af algoritmen. I alle typer klyngedannelsesmetoder kræves det at tage tre beslutninger:
+Klyngedannelse, også kaldet clustering, er en metode inden for matematisk teori, hvis formål er  at organisere og finde mønstre i data. Rå data kan være uoverskueligt og svært at Ideen med klyngedannelse, er at opdele et antal observationer i grupper, også kaldet klynger, baseret på hvor meget de "ligner" hindanen. For alle typer klynge-metoder er grupperingen baseret på en valgt afstandsmåling.  Euklidisk-afstand, Manhattan-afstand og korrelationsbaserede afstande kan alle være fornuftige at bruge afhænigt af hvilket type problem det er man vil løse. Dette valg har stor betydning og vil påvirke strukturen, størrelsen af klyngerne, samt beregningskompleksiteten af algoritmen. I alle typer klyngedannelsesmetoder kræves det at tage to beslutninger:
 
 \begin{itemize}
     \item Valg af afstandsfunktion, $\textit{d}(x_i, x_j)$ 
-    \item Et optimeringskriterium eller en strukturregel
-    \item En metode til at danne klynger ud fra disse
+
+    \item Valg af til klyngdannelsesalgoritme
 \end{itemize}
 
 En af de mest udbredte klyngedannelsesalgortimer er "K-means clustering", som er en partitional klyngedannelsesmetode. Her fastlægges et samlet antal klynger (K), hvor formålet er at minimere den samlede variation inden for klyngerne. Denne metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Denne metode bliver dermed ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning som svarer til antallet af klynger. Selvom denne metode er effektiv i mange tilfælde er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsing ikke er gældene. Da HRP er bygget op omkring Hierakisk klyngedannelse er det udelukkende denne type vi har fokus på.
@@ -46,4 +46,6 @@ Man opdaterer afstandene og beregner nu afstanden mellem den nye klynge og de ø
 Man gentager nu processen indtil alle observationer er samlet i en klynge.
 
 \subsubsection{Klyngeafstandsmål}
+
+
 \end{document}
