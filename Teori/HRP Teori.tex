@@ -1,14 +1,23 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 \section{HRP teori}
-\subsection{Hierakisk Klyngedannelse}
-Klyngedannelse, også kaldet clustering, er en metode inden for matematisk teori, hvis formål er  at organisere og finde mønstre i data. Rå data kan være uoverskueligt og svært at Ideen med klyngedannelse, er at opdele et antal observationer i grupper, også kaldet klynger, baseret på hvor meget de "ligner" hindanen. For alle typer klynge-metoder er grupperingen baseret på en valgt afstandsmåling.  Euklidisk-afstand, Manhattan-afstand og korrelationsbaserede afstande kan alle være fornuftige at bruge afhænigt af hvilket type problem det er man vil løse. Dette valg har stor betydning og vil påvirke strukturen, størrelsen af klyngerne, samt beregningskompleksiteten af algoritmen. I alle typer klyngedannelsesmetoder kræves det at tage to beslutninger:
+\subsection{Klyngedannelse}
+Rå data kan være uoverskueligt og svært at behandle og afkode. Hvis ikke man har en organiseringsmetode, før man vil bearbejde sin data, kan man misse systematiske egenskaber som kan være betydelige ift. analyse og viderearbejde af dataen.  Klyngedannelse, også kaldet clustering, er svaret på dette problem. Ved at organisere, strukturere og separere data ind i grupper, kan man få en dybbere forståelse af dataen. Hermed er det en ekstremt brugbar metode, som  tydeliggør systematiske sammhæng i data. I alle typer af klyngedannelsesmetoder, kræves det at tage to beslutninger:
 
 \begin{itemize}
     \item Valg af afstandsfunktion, $\textit{d}(x_i, x_j)$ 
-
     \item Valg af til klyngdannelsesalgoritme
 \end{itemize}
+
+Den centrale måde hvorpå dataen bliver organiseret, er baseret på hvor meget dataen "ligner" hindanen. Dette bliver afgjort ved brug af afstandsmål. Afstandsmål, brugt i klyngedannelse, kan være alt fra Euklidisk-afstand, Manhattan-afstand, til korrelationsbaserede afstande. Alle er fornuftige at bruge afhænigt af hvilket type problem det er man vil løse. 
+Valget har dog stor betydning og vil påvirke både strukturen, størrelsen af klyngerne, samt beregningskompleksiteten af metoden.
+
+Selve klyngedannelsesalgoritmen er en lige så væsenlig beslutning at tage, som afstandsmålet, når man skal organisere sin data. Denne del kaldes også for kobling, eller linkage. 
+
+Som beskrevet tidligere, er der flere forskellige klyngedannelsesmetoder. \textit{(Jain 2010) }opdeler disse metoder ind i to grupper: Heirakiske og partitionale.
+Klyngealgoritmer kan groft opdeles i to grupper: hierarkiske og partitionelle. Hierarkiske klyngealgoritmer finder rekursivt indlejrede klynger enten i agglomerativ tilstand (starter med hvert datapunkt i sin egen klynge og fletter det mest lignende par af klynger successivt sammen for at danne et klyngehierarki) eller i divisiv (top-down) tilstand (starter med alle datapunkterne i én klynge og opdeler rekursivt hver klynge i mindre klynger). Sammenlignet med hierarkiske klyngealgoritmer finder partitionelle klyngealgoritmer alle klyngerne samtidigt som en partition af dataene og pålægger ikke en hierarkisk struktur.
+
+
 
 En af de mest udbredte klyngedannelsesalgortimer er "K-means clustering", som er en partitional klyngedannelsesmetode. Her fastlægges et samlet antal klynger (K), hvor formålet er at minimere den samlede variation inden for klyngerne. Denne metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Denne metode bliver dermed ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning som svarer til antallet af klynger. Selvom denne metode er effektiv i mange tilfælde er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsing ikke er gældene. Da HRP er bygget op omkring Hierakisk klyngedannelse er det udelukkende denne type vi har fokus på.
 
