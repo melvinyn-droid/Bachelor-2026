@@ -1,34 +1,69 @@
 % !TEX root = ../main.tex
 % Denne fil kompileres via main.tex.
 \documentclass[../main.tex]{subfiles}
-\usepackage{amsmath,amssymb}
 \begin{document}
 
-\section{Data og databehandling}
+\section{Data}
 
-\section{Data og databehandling}
+\subsection{Datakilde og afgrænsning}
 
-Analysen bygger på månedlige aktiedata fra CRSPs \textit{Monthly Stock File}, hentet via WRDS og gemt i filen \texttt{bachelor data v1.csv}. Datasættet indeholder observationer på selskabsniveau og omfatter blandt andet variablene \texttt{Ticker}, \texttt{PERMCO}, \texttt{SHRCD}, \texttt{EXCHCD}, \texttt{SICCD}, \texttt{HSICCD}, \texttt{PRC}, \texttt{RET}, \texttt{SHROUT} og \texttt{DLRET}. Disse variable anvendes til at identificere selskaberne, afgrænse investeringsuniverset samt konstruere de afkast- og størrelsesmål, der indgår i analysen.
+Det anvendte datasæt er fra CRSP og er eksporteret via Wharton Research Data Services (WRDS). Datasættet består af månedlige observationer for amerikanske aktier i perioden fra januar 1990 til december 2024. I den videre analyse afgrænses datasættet til almindelige selskabsaktier handlet på NYSE, AMEX og NASDAQ. Denne afgrænsning foretages ved hjælp af CRSP-variablerne \texttt{SHRCD} og \texttt{EXCHCD}, hvor vi alene medtager observationer med \texttt{SHRCD} $\in \{10,11\}$ og \texttt{EXCHCD} $\in \{1,2,3\}$.
 
-Det rå datasæt indeholder i alt 3.266.650 observationer fordelt over perioden fra januar 1990 til december 2024. Databehandlingen indledes med en teknisk rensning af rådata. Først standardiseres variabelnavne, og centrale variable konverteres til numerisk format, så de kan anvendes konsistent i den videre behandling. Observationer uden gyldig dato eller uden gyldigt aktie-id fjernes, da de ikke kan placeres korrekt i et paneldatasæt. Herefter sorteres datasættet efter aktie og dato, og eventuelle dubletter på samme aktie-dato kombination fjernes. I det konkrete datasæt fjernes 7 dubletter, således at det rensede datasæt efter dette trin indeholder 3.266.643 observationer. Dermed sikres det, at hver aktie højst optræder én gang pr. måned.
+Afgrænsningen har to formål. For det første sikrer den, at analysen fokuserer på ordinære børsnoterede amerikanske aktier og dermed udelukker værdipapirer med en anden økonomisk struktur, som for eksempel fonde eller andre aktieklasser, som ikke er direkte sammenlignelige med almindelige selskabsaktier. For det andet reducerer den heterogeniteten i datasættet og gør det mere egnet til porteføljeanalyse. Fordi at sammenlignelige afkast- og risikostrukturer ønskes tværs af et samlet investeringsunivers.
 
-Det månedlige afkast konstrueres som et totalafkast, hvor både det ordinære afkast og et eventuelt delisting-afkast indgår. For aktie $i$ i måned $t$ beregnes totalafkastet som
+Vi har valgt at anvende datasættet fra CRSP, da det er særligt velegnet til denne type analyse. Databasen indeholder både historiske afkastserier, samt registrerer hændelser som afnoteringer på selskabsniveau. Det er vigtigt i empiriske porteføljestudier, fordi datasættet dermed ikke alene består af selskaber, som overlever til slutningen af perioden. Dermed fremstår både aktive og senere afnoterede aktier inden for den valgte periode, der medfører et mere retvisende billede af investeringsuniverset.
+
+\subsection{Variabler}
+
+Datasættet indeholder variablerne \texttt{PERMNO}, \texttt{date}, \texttt{RET}, \texttt{DLRET}, \texttt{PRC}, \texttt{SHROUT}, \texttt{EXCHCD} og \texttt{SHRCD}. \texttt{PERMNO} fungerer som en entydig identifikation af den enkelte aktie gennem hele perioden, mens \texttt{date} angiver observationstidspunktet.
+
+For analysen er to typer variable særligt centrale. Den første er afkastvariable, hvor \texttt{RET} angiver det ordinære månedlige afkast, og \texttt{DLRET} angiver et eventuelt afnoteringsafkast. Den anden er størrelsesvariablerne, hvor \texttt{PRC} som er aktieprisen og \texttt{SHROUT} som er antal aktier anvendes til at beregne markedsstørrelsen for det enkelte aktiv. Bemærk at vi tager den absolutte værdi af \texttt{PRC} da den kan være registreret med negativt fortegn. Dette betyder ikke, at aktieprisen er økonomisk negativ, men at CRSP har anvendt et bid-ask gennemsnit i stedet for en faktisk closing price.
+\begin{equation}
+    \label{eq:placeholder_label}
+    \text{Market Cap}_{i,t} = \left| \text{PRC}_{i,t} \right| \cdot \text{SHROUT}_{i,t}
+\end{equation}
+
+Disse variable danner tilsammen grundlag for analysens videre databehandling, da markedsstørrelsen bruges til at bestemme TOP N universet.
+
+\subsection{Analyseperiode}
+
+Rådatasættet dækker perioden fra januar 1990 til december 2024. Der skelnes mellem dataens samlede dækningsperiode og den periode, hvor porteføljerne faktisk kan evalueres. Da analysen baseres på historiske observationsvinduer, kræver den første evaluering, at der allerede foreligger et tilstrækkeligt antal tidligere observationerserier. Dette kommer vi nærmere på i implementeringsafsnittet.
+
+
+\section{Databehandling}
+
+\subsection{Rensning og filtrering af observationer}
+
+Databehandlingen starter med en rensning af rådata, så datasættet bliver konsistent og anvendeligt til den videre analyse. Først standardiseres variabelnavne, og konverteres til numerisk format, hvor det er relevant. Datoformatet omdannes herefter, så observationerne kan identificeres på månedsniveau.
+
+Observationer uden gyldig identifikation eller dato udelades. Konkret fjernes observationer, hvor enten \texttt{PERMNO} eller \texttt{date} mangler. Herefter sorteres datasættet efter identifikation og dato, og eventuelle dubletter på kombinationen af \texttt{PERMNO} og dato fjernes, så der kun bevares en observation pr. aktie pr. måned. Denne rensning er nødvendig for at sikre, at de samme observationer et konsistent datasæt.
+
+Efter denne indledende rensning foretages den endelige afgrænsning til almindelige selskabsaktier noteret på NYSE, AMEX og NASDAQ. 
+
+\subsection{Konstruktion af totalafkast}
+
+Det månedlige afkast konstrueres med udgangspunkt i både det ordinære månedlige afkast \texttt{RET} og et eventuelt afnoteringsafkast \texttt{DLRET}. I stedet for blot at anvende \texttt{RET} beregnes et samlet månedligt afkast som:
+\begin{equation}
+    r_{i,t}^{\text{total}} = (1+\texttt{RET}_{i,t})(1+\texttt{DLRET}_{i,t}) - 1.
+\end{equation}
+Denne konstruktion har konsekvensen, at hvis en aktie afnoteres i en given måned, indgår den tilhørende afnoteringsafkast i det samlede afkastet.
+
+Det er metodisk vigtigt, fordi et afkastmål baseret alene på \texttt{RET} vil give et skævt billede af de faktiske afkast for aktier, der forlader markedet. Ved at inkludere \texttt{DLRET} opnås et mere retvisende mål for det samlede afkast, som investoren faktisk ville have optjent i den pågældende måned. Hvis en af de afkastmål er fraværende i dataen har det altså ingen effekt på afkastet.
+
+
+
+\subsection{Manglende observationer og datakrav}
+
+Et centralt træk ved finansielle datasæt er, at ikke alle aktier observeres i alle måneder. Nogle selskaber børsnoteres sent i måneden, andre afnoteres undervejs, og for enkelte observationer kan de brugte variable mangle. Databehandlingen skal derfor fastlægge, hvordan sådanne manglende observationer håndteres, så det endelige datasæt bliver metodisk konsistent.
+
+I implementering stilles der et eksplicit datakrav til aktiernes historik i estimeringsvinduet. En aktie kan kun indgå i universet i en given evalueringsmåned, hvis den er observeret i mindst en andel på $95\%$ af estimeringsmånederne. Med et lookback-vindue på $120$ måneder betyder dette, at aktien skal have observerede afkast i mindst
 \[
-R_{i,t}^{\text{total}} = (1+\texttt{RET}_{i,t})(1+\texttt{DLRET}_{i,t}) - 1.
+\lceil 0.95 \cdot 120 \rceil = 114
 \]
-Denne konstruktion er væsentlig, fordi afnoteringer ellers kan medføre en systematisk skævhed i de observerede afkast. Hvis en aktie afnoteres, vil en del af investorens realiserede afkast ofte ligge i \texttt{DLRET}, og denne komponent bør derfor medtages. Hvis både \texttt{RET} og \texttt{DLRET} mangler i en given måned, behandles observationen som manglende. I det rensede datasæt mangler \texttt{RET} i 111.073 observationer, mens \texttt{DLRET} mangler i hovedparten af observationerne, nemlig 3.246.037. Dette er forventeligt, da delisting-afkast kun forekommer ved afnoteringer. Efter konstruktionen af totalafkast mangler det samlede afkast i 92.745 observationer.
+måneder for at blive indkluderet i universet. Aktiver med for kort eller for ujævn historik udelades dermed allerede inden estimeringen af kovarians- og korrelationsmatricerne.
 
-Selskabernes størrelse måles ved markedsværdi, som beregnes på baggrund af pris og antal udestående aktier. Markedsværdien for aktie $i$ i måned $t$ beregnes som
-\[
-MCAP_{i,t} = |\texttt{PRC}_{i,t}| \cdot \texttt{SHROUT}_{i,t}.
-\]
-Den absolutte værdi af \texttt{PRC} anvendes, fordi CRSP i nogle tilfælde registrerer negative priser som en teknisk markering snarere end som økonomisk meningsfulde negative priser. I datasættet forekommer 191.675 negative prisobservationer, som derfor omregnes til deres absolutte værdi. Efter konvertering til numerisk format mangler \texttt{PRC} i 86.762 observationer, mens \texttt{SHROUT} mangler i 25.111 observationer. Da markedsværdien kræver begge variable, mangler \texttt{market\_cap} i 86.762 observationer.
+Når aktierne opfylder kravet , estimeres kovarians- og korrelationsmatricerne på baggrund af de tilgængelige observationer i det valgte estimationsvindue uden yderligere sletning af hele måneder. Det indebærer, at de enkelte kovarians- og korrelationselementer kan være estimeret på forskellige underliggende overlap mellem aktiverne.
 
-For at opnå et mere homogent analysegrundlag afgrænses datasættet herefter ved hjælp af \texttt{EXCHCD} og \texttt{SHRCD}. Først beholdes alene observationer med \texttt{EXCHCD = 3}. Dette reducerer datasættet fra 3.266.643 til 1.575.456 observationer, hvilket svarer til, at 1.691.187 observationer ekskluderes. Dernæst beholdes kun observationer med \texttt{SHRCD} lig 10 eller 11, hvilket svarer til ordinære aktier. Efter dette filter reduceres datasættet yderligere til 1.324.241 observationer, så yderligere 251.215 observationer fjernes. Det endelige analysegrundlag består dermed af Nasdaq-noterede common stocks.
-
-Efter filtreringen omformes data til to månedlige paneler: et afkastspanel og et panel med markedsværdier. Begge paneler indekseres på måned og aktie-id. Det endelige panel dækker 420 måneder fra januar 1990 til december 2024 og indeholder 14.173 unikke aktier. Panelet er relativt sparsomt, hvilket er normalt i store aktiedatabaser, fordi mange aktier kun handles i en del af den samlede periode. Andelen af observerede afkast i afkastspanelet er 22,03 pct., mens 77,97 pct. af cellerne er manglende. Tilsvarende er andelen af observerede markedsværdier 22,08 pct., mens 77,92 pct. af cellerne er manglende.
-
-Databehandlingen har således to hovedformål. For det første sikrer den, at de observerede afkast i højere grad afspejler investorens faktiske realiserede afkast ved også at inkludere delisting-afkast. For det andet skaber den et konsistent og operationelt paneldatasæt, der kan anvendes til den efterfølgende konstruktion af investeringsunivers, estimering af kovarians- og korrelationsmatricer samt evaluering af porteføljestrategier.
-
+Disse datakrav indebærer en klar afvejning. På den ene side forbedrer de konsistensen i datagrundlaget ved at udelukke aktiver med utilstrækkelig historik. På den anden side reducerer de det effektive antal observationer og kan føre til, at det endelige estimationsgrundlag bliver mindre end den nominelle dataperiode. Den endelige stikprøve bestemmes derfor ikke alene af datasættets samlede længde, men også af hvor mange observationer der faktisk opfylder kravene til historik og datakvalitet.
 
 \end{document}
