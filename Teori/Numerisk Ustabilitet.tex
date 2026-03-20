@@ -8,7 +8,7 @@
 
 $C$ er korrelationsmatricen, mens $\Sigma$ er kovariansmatricen.
 
-Numerisk ustabilitet har stor betydning inden for moderne porteføljeteori, da det indebærer, at vores traditionelle optimeringsmetoder ikke nødvendigvis er tilstrækkelige til at sikre et konsistent og rigtigt resultat.
+Numerisk ustabilitet har stor betydning inden for moderne porteføljeteori, da det indebærer, at vores traditionelle optimeringsmetoder ikke nødvendigvis er tilstrækkelige til at sikre et konsistent og korrekt resultat.
 
 I denne opgave behandler vi numerisk ustabilitet i populationens kovarians- og korrelationsmatrice. Problemet er, at disse er ukendte, og at vi derfor forsøger at estimere dem gennem stikprøvekovarians- og stikprøvekorrelationsmatricen. I estimationsprocessen opstår der støj, som bliver inkluderet i stikprøven. Det er vigtigt at skelne mellem to kilder til numerisk ustabilitet i de estimerede matricer. Den første kilde er estimationsstøj fra stikprøveusikkerhed. Den opstår, fordi vi kun observerer et endeligt antal observationer, og den kan mindskes ved at reducere $N/T$-ratioen, hvor $N$ er antallet af aktiver og $T$ er antallet af observationer. Den anden kilde er signal- eller strukturinduceret ustabilitet. Her er det selve korrelationsstrukturen i populationen, eksempelvis stærkt krydskorrelerede aktiver, der presser nogle egenværdier mod nul og dermed øger condition number. Denne form for ustabilitet skyldes derfor ikke alene estimationen og kan ikke nødvendigvis reduceres ved blot at formindske $N/T$-ratioen.
 
@@ -22,7 +22,7 @@ Vi vælger at betragte aktiemarkedet med den bagvedliggende datagenererende proc
 Marchenko-Pastur-teoremet viser, under antagelse af I.I.D.-observationer og for $N\to\infty$ samt $T\to\infty$, at fordelingen for egenværdierne for stikprøvekovariansmatricen konvergerer mod Marchenko-Pastur-fordelingen:
 
 \begin{equation}
-    \rho_{mp}[\lambda] =
+    \rho_{mp}(\lambda) =
     \begin{cases}
         \dfrac{T}{N}\dfrac{\sqrt{(\lambda_{+}-\lambda)(\lambda-\lambda_{-})}}{2\pi\lambda\sigma^{2}} & \text{hvis } \lambda \in [\lambda_{-},\lambda_{+}] \\
         0 & \text{hvis } \lambda \notin [\lambda_{-},\lambda_{+}]
@@ -36,7 +36,7 @@ Hvor de asymptotiske grænser for minimum og maksimum af egenværdierne er:
     \label{eq:mp_bounds}
 \end{equation}
 
-Under nulhypotesen $\Sigma=\sigma^2 I$, hvilket for den tilhørende korrelationsmatrix svarer til $C=I$, ligger egenværdierne inden for intervallet $[\lambda_-,\lambda_+]$ og opstår derfor alene af estimationsstøj. I en empirisk stikprøvekovariansmatrice er ikke alle egensystemer fuldkommen tilfældige. Således fortolkes egenværdier uden for intervallet for nulhypotesen som et signifikant statistisk signal, der ikke alene kan forklares af støj. For finansielle datasæt er signal-til-støj-ratioen kendt for at være lav som et resultat af arbitrære kræfter.\cite{lopez_de_prado_machine_2020}
+Under nulhypotesen $\Sigma=\sigma^2 I$, hvilket for den tilhørende korrelationsmatrix svarer til $C=I$, ligger egenværdierne inden for intervallet $[\lambda_-,\lambda_+]$ og opstår derfor alene af estimationsstøj. I en empirisk stikprøvekovariansmatrice er ikke alle egenværdier fuldkommen tilfældige. Således fortolkes egenværdier uden for intervallet for nulhypotesen som et signifikant statistisk signal, der ikke alene kan forklares af støj. For finansielle datasæt er signal-til-støj-ratioen kendt for at være lav som et resultat af arbitrære kræfter.\cite{lopez_de_prado_machine_2020}
 \begin{figure}
     \centering
     \includegraphics[width=0.5\linewidth]{Teori/MP fordeling med data.jpg}
@@ -46,11 +46,11 @@ Under nulhypotesen $\Sigma=\sigma^2 I$, hvilket for den tilhørende korrelations
 
 
 
-Ser vi kort på matriceinvertering, kan vi bruge samme udgangspunkt i MP-fordelingen til at forstå, hvordan estimationsstøj forværrer inversionen i en optimeringsmetode. Ved asymptotik og under nulhypotesen $\Sigma=\sigma^2 I$ gælder det, at stikprøvekovariansmatricens egenværdier vil konvergere mod MP-fordelingen. Dette har en direkte implikation for den numeriske stabilitet af kovariansestimatet. Når $q$-ratioen ikke er ubetydelig lille, vil $\lambda_-\to0$ når $q\to1$, hvilket fremkommer af $\lambda_-=\sigma^2(1-\sqrt{q})^2$. Dette medfører, at condition number for stikprøvematricen, der er defineret som
+Ser vi kort på matriceinvertering, kan vi bruge samme udgangspunkt i MP-fordelingen til at forstå, hvordan estimationsstøj forværrer inversionen i en optimeringsmetode. Asymptotik og under nulhypotesen $\Sigma=\sigma^2 I$ gælder det, at stikprøvekovariansmatricens egenværdier vil konvergere mod MP-fordelingen. Dette har en direkte implikation for den numeriske stabilitet af kovariansestimatet. Når $q$-ratioen ikke er ubetydelig lille, vil $\lambda_-\to0$ når $q\to1$, hvilket fremkommer af $\lambda_-=\sigma^2(1-\sqrt{q})^2$. Dette medfører, at konditionstallet for stikprøvematricen, der er defineret som
 \begin{equation}
     \kappa(\hat{\Sigma})=\lambda_{\max}/\lambda_{\min}\approx\lambda_+/\lambda_-=((1+\sqrt{q})^2)/((1-\sqrt{q})^2)
 \end{equation}
-vokser eksplosivt, når $q$ går mod $1$. Et højt konditionstal indebærer, at matricen er ill-conditioned. Altså kan små ændringer i data, som i vores tilfælde kan være støj, give store udsving i kovariansmatricens inverse.
+vokser eksplosivt, når $q$ går mod $1$. Et højt konditionstal indebærer, at matricen er dårligt konditioneret. Altså kan små ændringer i data, som i vores tilfælde kan være støj, give store udsving i kovariansmatricens inverse.
 
 Dette kan direkte observeres ved spektraldekompositionen. $\hat{\Sigma}=Q\Lambda Q'$ og dermed $\hat{\Sigma}^{-1}=Q\Lambda^{-1}Q'$. Den inverse matrice bruges i klassiske porteføljeoptimeringsmetoder. Udfordringen for disse metoder er, at når $\Lambda^{-1}=\mathrm{diag}(1/\lambda_1,\ldots,1/\lambda_N)$, bliver $1/\lambda_i$ meget stor, når egenværdierne ligger tæt på $0$. Dermed forstærkes estimationsstøjen i inversen, hvilket resulterer i numerisk ustabilitet.
 
@@ -63,7 +63,7 @@ Random Matrix Theory beskriver dermed en numerisk ustabilitet, der opstår, selv
 \subsection{Numerisk ustabilitet som følge af signal}
 
 
-Selve signalet kan også medvirke til, at der opstår numerisk ustabilitet i korrelationsmatricen. For at isolere denne mekanisme skifter vi nu fokus fra stikprøvekovariansmatricen til populationskorrelationsmatricen $C$. Vi tager igen udgangspunkt i $C$, der er vores korrelationsmatrice, og betragter først en $2\times2$-matrice:
+Selve signalet kan også medvirke til, at der opstår numerisk ustabilitet i korrelationsmatricen. For at isolere denne mekanisme skifter vi nu fokus fra stikprøvekovariansmatricen til populationskorrelationsmatricen $C$. Vi tager igen udgangspunkt i $C$, der er korrelationsmatricen, og betragter først en $2\times2$-matrice:
 \begin{equation}
     C = \begin{bmatrix}
         1 & \rho \\
@@ -89,7 +89,7 @@ $C$-matricen kan diagonaliseres som $CW=W\Lambda$, eller ækvivalent som $C=W\La
 
 Den inverse af $C$ er
 \begin{equation}
-    C^{-1}=W\Lambda^{-1}W'=\frac{1}{|C|}
+    C^{-1}=W\Lambda^{-1}W'=\frac{1}{\det(C)}
     \begin{bmatrix}
         1 & -\rho \\
         -\rho & 1
