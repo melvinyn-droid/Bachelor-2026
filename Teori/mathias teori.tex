@@ -1,143 +1,167 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
+
 \section{Teoriafsnit om Hierarchical Risk Parity}
-HRP som hierarkisk porteføljeallokering
-Rå data kan ofte være uoverskuelige og vanskelige at arbejde med. Uden en systematisk metode til at organisere data før videre analyse, kan man risikere at overse mønstre eller strukturer, som kan være væsentlige for analysen og den efterfølgende fortolkning. Klyngedannelse, også kaldet clustering, er en metode, der adresserer dette problem. Ved at organisere og opdele data i grupper baseret på ligheder mellem observationer kan man opnå en dybere forståelse af datastrukturen. Hermed, gør klyngedannelse det muligt at identificere systematiske sammenhænge i data, som ellers kan være svære at opdage. 
-Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber. [5] I Porteføljeteori er “objekterne” typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor (Jain 2010) opdeler disse metoder ind i to grupper: partitionale og hierarkiske. 
- 
-Partitionale clusteringmetoder, f.eks. "K-means clustering”, fastlægger et samlet antal klynger (K). Formålet er at minimere den samlede variation inden for klyngerne, hvor de bliver grupperet ud fra distancen af en ”centroid”. En centroid er midterpunktet af hver klynge, hvor denne iterativt flyttes ud fra antal datapunkter der er i hver klynge. Denne type metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dermed bliver partitionale metoder ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning.
+
+\subsection{HRP som hierarkisk porteføljeallokering}
+
+Rå data kan ofte være uoverskuelige og vanskelige at arbejde med. Uden en systematisk metode til at organisere data før videre analyse, kan man risikere at overse mønstre eller strukturer, som kan være væsentlige for analysen og den efterfølgende fortolkning. Klyngedannelse, også kaldet clustering, er en metode, der adresserer dette problem. Ved at organisere og opdele data i grupper baseret på ligheder mellem observationer kan man opnå en dybere forståelse af datastrukturen. Hermed, gør klyngedannelse det muligt at identificere systematiske sammenhænge i data, som ellers kan være svære at opdage.
+
+Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber.~\cite{conradsen_clusteranalyse_2023} I Porteføljeteori er ``objekterne'' typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor Jain (2010) opdeler disse metoder ind i to grupper: partitionale og hierarkiske.~\cite{jain_data_clustering_2010}
+
+Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et samlet antal klynger (K). Formålet er at minimere den samlede variation inden for klyngerne, hvor de bliver grupperet ud fra distancen af en ``centroid''. En centroid er midterpunktet af hver klynge, hvor denne iterativt flyttes ud fra antal datapunkter der er i hver klynge. Denne type metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dermed bliver partitionale metoder ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning.
+
 Selvom partitionale metoder ofte er mere effektive og lettere at beregne, er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsning ikke er gældende. I Hierarkisk klyngedannelse, opdeler man igen punkterne ud fra lighed. Her bliver hver iteration en ny klynge. Algoritmen køres igennem indtil alle punkter er blevet inddelt i klynger, hvor output bliver et dendrogram.
- 
 
+HRP's brug af hierarkisk, frem for partitional clustering, er strukturel: HRP bruger en træstruktur (dendrogram) både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
 
-HRP’s brug af hierarkisk, frem for partitional clustering, er strukturel: HRP bruger en træstruktur (dendrogram) både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur. [6] 
-Der findes generelt set to typer af hierarkiske clustering-algoritmer som kan siges at være modsætninger: 
-Agglomerativ clustering (bottom-up): Her bliver hvert datapunkt inddelt i sin egen klynge, også kaldet en singelton-klynge. I hvert trin i algoritmen flettes de to mest lignende klynger sammen til en ny, større klynge. Hvis der er N datapunkter, er der N klynger i første step. Algoritmen gentages, indtil alle klynger bliver grupperet til en stor klynge.
-Divisiv hierarkisk klyngedannelse (top-down): Alle datapunkter er samlet i én stor klynge, og i hvert trin i algoritmen opdeles klyngen i to nye klynger. Algoritmen gentages, indtil alle observationer er i deres egen klynge, igen en singleton. Den divisive algoritme bliver brugt i mindre grad, da den er mere beregningstung. [https://medium.com/@sachinsoni600517/mastering-hierarchical-clustering-from-basic-to-advanced-5e770260bf93]
+Der findes generelt set to typer af hierarkiske clustering-algoritmer som kan siges at være modsætninger:
+\begin{description}
+    \item[Agglomerativ clustering (bottom-up):] Her bliver hvert datapunkt inddelt i sin egen klynge, også kaldet en singelton-klynge. I hvert trin i algoritmen flettes de to mest lignende klynger sammen til en ny, større klynge. Hvis der er $N$ datapunkter, er der $N$ klynger i første step. Algoritmen gentages, indtil alle klynger bliver grupperet til en stor klynge.
+    \item[Divisiv hierarkisk klyngedannelse (top-down):] Alle datapunkter er samlet i én stor klynge, og i hvert trin i algoritmen opdeles klyngen i to nye klynger. Algoritmen gentages, indtil alle observationer er i deres egen klynge, igen en singleton. Den divisive algoritme bliver brugt i mindre grad, da den er mere beregningstung.~\cite{soni_mastering_2023}
+\end{description}
 
-Da den agglomerative alogritme er mindre beregningstung og udelukkende bliver brugt i Marcos López de Prado’s originale artikel, vælger vi kun at fokusere på denne.
- 
-Afstandsmål i Clustering
-HRP’s tree clustering kræver i praksis en N×N afstandsmatrix mellem N aktiver. I denne kontekst er afstandsmålet mellem afkastserier, ikke et punkt-i-R^n i klassisk forstand. Man skal i stedet stille spørgsmålet om hvilken afstandsgeometri der giver et “økonomisk” meningsfuldt træ? Man kunne forestille sig at det giver mening at bruge korrelationskoefficienten, men denne kan ikke bruges direkte som afstandsmål, fordi den ikke opfylder egenskaberne for en afstandsmetrik. Vilkårene for en afstandmetrik er givet ved: 
-	Symmetri: d(X,Y)=d(Y,X)
-	Ikke-negativivtet: d(X,Y)≥0
-	Identitet/nul-afstand: d(X,Y)=0↔X=Y
-	Trekantsulighed: d(X,Z)≤d(X,Y)+d(Y,Z)
-https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2708678
-Klassiske afstande og clustering og HRP implikationer
-Der er flere mulige afstandsmetrikker der kan bruges i clustering og dermed i HRP. Nedenfor gennemgås de afstandsmål med fokus på skalafølsomhed, beregningsomkostninger og plausible effekter på HRP-træet, når datapunkterne er finansielle afkastserier r_i∈R^T.
-Euklidisk afstand:
+Da den agglomerative alogritme er mindre beregningstung og udelukkende bliver brugt i Marcos López de Prado's originale artikel, vælger vi kun at fokusere på denne.~\cite{lopez_de_prado_building_2016}
 
-d(X,Y)=√(∑_(i=1)^n▒(X_i-Y_i )^2 ).
-Euklidisk afstand er stærkt skalafølsom: høj-volatilitetsaktiver får større afstande, selv hvis korrelationsmønstret er ens. Derfor vil et HRP-træ baseret på rå Euklidisk afstand på afkast ofte cluster efter volatilitet snarere end “diversificerbar” samvariation. En konsekvens kan være, at quasi-diagonalization fremhæver blocks af høj-volatilitet vs lav-volatilitet, hvorefter recursive bisection kan skubbe vægt væk fra høj-volatilitetsklynger på en måde, der delvist “dobbeltstraffer” volatiliteten. [18]
-Manhattan afstand:
+\subsection{Afstandsmål i Clustering}
 
-d(X,Y)=∑_(i=1)^n▒|X_i-Y_i | .
-Manhatten afstand er også skalafølsom på samme måde som euklidisk afstand men er ofte mindre domineret af enkelte store afvigelser. I HRP kan manhatten afstand derfor give et træ, der er marginalt mere robust over for enkelte ekstreme observationer, men stadig primært cluster efter niveau/volatilitet, hvis data ikke standardiseres.
-Mahalanobis:
-Mahalanobis-afstanden er en afstandsmetode hvor man måler hvor mange standardafvigelser væk et punkt er fra middelværdien, ud fra datastrukturen. https://dilipkumar.medium.com/mahalanobis-distance-usage-in-machine-learning-2bd4bcacbcd2I
+HRP's tree clustering kræver i praksis en $N \times N$ afstandsmatrix mellem $N$ aktiver. I denne kontekst er afstandsmålet mellem afkastserier, ikke et punkt-i-$\mathbb{R}^n$ i klassisk forstand. Man skal i stedet stille spørgsmålet om hvilken afstandsgeometri der giver et ``økonomisk'' meningsfuldt træ? Man kunne forestille sig at det giver mening at bruge korrelationskoefficienten, men denne kan ikke bruges direkte som afstandsmål, fordi den ikke opfylder egenskaberne for en afstandsmetrik. Vilkårene for en afstandmetrik er givet ved:~\cite{lopez_de_prado_building_2016}
+\begin{itemize}
+    \item Symmetri: $d(X,Y)=d(Y,X)$
+    \item Ikke-negativivtet: $d(X,Y)\geq 0$
+    \item Identitet/nul-afstand: $d(X,Y)=0 \leftrightarrow X=Y$
+    \item Trekantsulighed: $d(X,Z)\leq d(X,Y)+d(Y,Z)$
+\end{itemize}
+
+\subsubsection{Klassiske afstande og clustering og HRP implikationer}
+
+Der er flere mulige afstandsmetrikker der kan bruges i clustering og dermed i HRP. Nedenfor gennemgås de afstandsmål med fokus på skalafølsomhed, beregningsomkostninger og plausible effekter på HRP-træet, når datapunkterne er finansielle afkastserier $r_i \in \mathbb{R}^T$.
+
+\paragraph{Euklidisk afstand.}
+\[
+    d(X,Y)=\sqrt{\sum_{i=1}^{n}(X_i-Y_i)^2}.
+\]
+Euklidisk afstand er stærkt skalafølsom: høj-volatilitetsaktiver får større afstande, selv hvis korrelationsmønstret er ens. Derfor vil et HRP-træ baseret på rå Euklidisk afstand på afkast ofte cluster efter volatilitet snarere end ``diversificerbar'' samvariation. En konsekvens kan være, at quasi-diagonalization fremhæver blocks af høj-volatilitet vs lav-volatilitet, hvorefter recursive bisection kan skubbe vægt væk fra høj-volatilitetsklynger på en måde, der delvist ``dobbeltstraffer'' volatiliteten.~\cite{nist_euclidean_distance_2017,kaae_karppinen_hierarchical_2022}
+
+\paragraph{Manhattan afstand.}
+\[
+    d(X,Y)=\sum_{i=1}^{n}|X_i-Y_i|.
+\]
+Manhatten afstand er også skalafølsom på samme måde som euklidisk afstand men er ofte mindre domineret af enkelte store afvigelser. I HRP kan manhatten afstand derfor give et træ, der er marginalt mere robust over for enkelte ekstreme observationer, men stadig primært cluster efter niveau/volatilitet, hvis data ikke standardiseres.~\cite{nist_manhattan_distance_2017,kaae_karppinen_hierarchical_2022}
+
+\paragraph{Mahalanobis.}
+Mahalanobis-afstanden er en afstandsmetode hvor man måler hvor mange standardafvigelser væk et punkt er fra middelværdien, ud fra datastrukturen.~\cite{kumar_mahalanobis_2025}
+
 I klassisk form kan den opskrives som:
-d(X)=√((X-μ)^⊤ Σ^(-1) (X-μ) ).
-Her er X datapunktet, μ er middelværdien af punkterne, og Σ er kovariansmatricen.
-I HRP-kontekst er Mahalanobis teoretisk attraktiv, fordi den skalerer distancen ud fra varians og korrelation af dataen. Man kan sige at den “korrigerer” for korrelationer. Den har dog et centralt metodisk problem, nemlig at den kræver inversion af kovariansmatricen. Det ligger i direkte spænding med HRP’s motivation om at undgå numerisk skrøbelige matrixoperationer i porteføljekonstruktion, især under estimeringsfejl. [4] Derfor bruges Mahalanobis sjældent som standardafstand i HRP-clustering og er mest plausibel i små N eller hvor der anvendes stærk regularisering af S.
+\[
+    d(X)=\sqrt{(X-\mu)^\top \Sigma^{-1}(X-\mu)}.
+\]
+Her er $X$ datapunktet, $\mu$ er middelværdien af punkterne, og $\Sigma$ er kovariansmatricen.
 
-Chebyshev : 
+I HRP-kontekst er Mahalanobis teoretisk attraktiv, fordi den skalerer distancen ud fra varians og korrelation af dataen. Man kan sige at den ``korrigerer'' for korrelationer. Den har dog et centralt metodisk problem, nemlig at den kræver inversion af kovariansmatricen. Det ligger i direkte spænding med HRP's motivation om at undgå numerisk skrøbelige matrixoperationer i porteføljekonstruktion, især under estimeringsfejl.~\cite{kaae_karppinen_hierarchical_2022} Derfor bruges Mahalanobis sjældent som standardafstand i HRP-clustering og er mest plausibel i små $N$ eller hvor der anvendes stærk regularisering af $S$.
+
+\paragraph{Chebyshev.}
 Chebyshev distance kan formuleres som den maksimal difference mellem to punkter:
-d(X_i,Y_j )=max_i (|X_i-Y_i |) 
-https://www.datacamp.com/tutorial/chebyshev-distance
-Denne type distance bliver ofte anvendt i clusteirngproblemer hvor den maksimale distance mellem punkter er vigtigere end den overordnede distance. For afkastdata med tunge haler og outliers kan Chebyshev derfor gøre træet ekstremt outlier-drevet: én krisedag kan dominere hele afstandsgeometrien. Det er sjældent fordelagigt at bruges denne afstandstype inden for porteføljeoptimering, hvor målet typisk er en stabil afhængighedsstruktur over en estimeringsperiode.
+\[
+    d(X_i,Y_j)=\max_i (|X_i-Y_i|).
+\]
+Denne type distance bliver ofte anvendt i clusteirngproblemer hvor den maksimale distance mellem punkter er vigtigere end den overordnede distance.~\cite{chugani_chebyshev_nodate} For afkastdata med tunge haler og outliers kan Chebyshev derfor gøre træet ekstremt outlier-drevet: én krisedag kan dominere hele afstandsgeometrien. Det er sjældent fordelagigt at bruges denne afstandstype inden for porteføljeoptimering, hvor målet typisk er en stabil afhængighedsstruktur over en estimeringsperiode.
 
-Standard HRP-afstand: korrelation
-Pearson/korrelation distance er hvad man oprindelig anvendte i HRP. Dog kan ”1-ρ” ikke udelukkende bruges, da det ikke nødvendigvis opfører sig metrisk. Derfor var det nødvendigt at lave en transformation. Her er det vigtigt at skelne mellem en vektorafstand af rå observationsvektorer (f.eks. Euklidisk afkast over tid og en korrelationsafstand, hvor man først estimerer en afhængighedsparameter, ρ_ij, og derefter transformerer den til en afstand. Marcos López de Prado foreslår en specifik transformation af matricen. Det er denne klassiske HRP-transformation som kan skrives som:
-d_ij=√(1/2 (1-ρ_ij ) ).
-Det er netop denne transformation som er den anbefalede måde at gøre korrelation ρ_ij til en afstandsmetrik. Fortolkningen er at et aktivpar med høj positiv korrelation får lille afstand og dermed bliver sat tæt i dendrogrammet, mens lav eller negativ korrelation øger afstand og typisk placerer aktiver i forskellige grene/klynger. Dette påvirker direkte hvilke blokke der fremstår i quasi-diagonalization, og dermed hvilke subklynger der konkurrerer om risikobudget i den rekursive bi-sektion. [8]
-En særlig detalje ved HRP som ofte overses, er konstruktionen af en sekundær afstand D ̃, hvor man måler euklidisk afstand mellem kolonnerne i den oprindelige distance matrix D.  Dette kan beskrives som en euklidisk distance matrix D ̃={d ̃_ij} med:
-d ̃_ij=√(∑_(n=1)^N▒(d_(n,i)-d_(n,j) )^2 ).
-[7]
-Intuitionen er, at to aktiver er “lignende”, hvis deres afstandsprofil til alle andre aktiver er lignende (systemisk, ikke kun parvist). I HRP kan dette gøre træet mere følsomt over for hele korrelationsstrukturen (netværksperspektiv), hvilket igen påvirker seriation og blokstruktur i quasi-diagonalization. [16]
-Linkage-kriterier og deres konsekvenser i HRP
-Tidligere blev der beskrevet hvordan agglomerativ hierarkisk clustering starter med N singleton-klynger og fusionerer iterativt de to nærmeste klynger. Det afgørende valg der bestemmer hvordan disse bliver dannet, er linkage. Linkage-valget ændrer ikke blot dendrogrammets “æstetik”, men også hvilke geometriske former, der accepteres som klynger—og dermed HRP’s blokstruktur og risikofordeling. For at kunne vælge den bedst mulige løsning er det nødvendigt at få et overblik over de mest brugte linkagetyper. Notationen brugt i denne sammenhæng er givet ved: I og J er to klynger som fusionereres. K er en anden klynge. Her er d(I∪J,K) den opdaterede klynge.
-Single linkage:
-d(I∪J,K)=min(d(I,K),d(J,K)).
-Single linkage er den mest enkelte linkagetype og kræver ikke meget beregningsintensitet. Den kræver kun ét nært par punkter for at fusionere klynger og kan derfor skabe kædeformede klynger (chaining). Problemet med single linkage er at den “suffers from chaining”, fordi fusion kan ske på baggrund af én tæt forbindelse uanset resten af punkterne; resultatet kan blive spredte, ikke-kompakte klynger. [27] Dette betyder også at den er mere sensitiv overfor outliers. 
-Complete linkage:
-d(I∪J,K)=max(d(I,K),d(J,K)).
-Complete linkage er modsætningen til Single linkage. Den tager den maksimale distance mellem to punkter i hver sin klynge. Complete linkage undgår chaining, men kan give “crowding”, fordi den baserer sig på worst-case afstand i en klynge. Dermed kan den også blive følsom over for ekstreme observationer/outliers og presse klynger til at være meget kompakte. [29]
+\subsubsection{Standard HRP-afstand: korrelation}
 
-Average linkage:
-d(I∪J,K)=(n_I d(I,K)+n_J d(J,K))/(n_I+n_J )
-Her er n_I,n_J antal punkter i hver klynge.
-Average linkage ligger mellem single og complete og kan ofte give mere balancerede dendrogrammer. [25] Den vælger gennemsnittet af distancen for alle punkter i de to klynger og er dermed mere immun overfor outliers. Selvom denne type er mere balanceret end de andre typer, er der en vigtig forskel man skal tage med i sin overvejelse. Denne type er ikke invariant over for monotone transformationer af afstande, fordi den gennemsnitter afstande. Dette er i modsætning til single og complete linkage som bevarer den relative orden af afstande. [30] Det betyder, at hvis man skalerer/transformerer korrelationsafstande, kan average linkage ændre fusionsrækkefølgen og dermed HRP-seriationen.
+Pearson/korrelation distance er hvad man oprindelig anvendte i HRP. Dog kan ``1-$\rho$'' ikke udelukkende bruges, da det ikke nødvendigvis opfører sig metrisk. Derfor var det nødvendigt at lave en transformation. Her er det vigtigt at skelne mellem en vektorafstand af rå observationsvektorer (f.eks. Euklidisk afkast over tid) og en korrelationsafstand, hvor man først estimerer en afhængighedsparameter, $\rho_{ij}$, og derefter transformerer den til en afstand. Marcos López de Prado foreslår en specifik transformation af matricen. Det er denne klassiske HRP-transformation som kan skrives som:
+\[
+    d_{ij}=\sqrt{\frac{1}{2}(1-\rho_{ij})}.
+\]
+Det er netop denne transformation som er den anbefalede måde at gøre korrelation $\rho_{ij}$ til en afstandsmetrik. Fortolkningen er at et aktivpar med høj positiv korrelation får lille afstand og dermed bliver sat tæt i dendrogrammet, mens lav eller negativ korrelation øger afstand og typisk placerer aktiver i forskellige grene/klynger. Dette påvirker direkte hvilke blokke der fremstår i quasi-diagonalization, og dermed hvilke subklynger der konkurrerer om risikobudget i den rekursive bi-sektion.~\cite{mantegna_hierarchical_1999,lopez_de_prado_building_2016,kaae_karppinen_hierarchical_2022}
 
-Ward:
-Ward-linkage (minimum variance) giver typisk kompakte klynger og kan reducere chaining, men er samtidig følsom over for implementeringsdetaljer. Wards metode måler ikke direkte distance, men i stedet den samlede stigning i within-cluster varians når to klynger fusionere. I praksis kan dette gøres på forskellige måder, men ofte minimerer man kvardratsummen mellem klyngerne. Der er dog dokumenterede tilfælde, hvor forskellige software pakker påstår at implementere Ward, men giver forskellige resultater. [32] Dette er metodisk vigtigt i HRP, fordi forskelle i dendrogram kan føre til forskellig quasi-diagonalization og dermed forskellige vægte, selv med samme data.
-Hvilket linkage bruger standard HRP, og hvad betyder det for seriation og bisection?
-Som udgangspunkt benytter HRP single linkage som linkage-kriterium. [34] Dette bekræftes i officiel R-dokumentation for HRP-porteføljer, hvor “single” er default linkage i en HRP-funktion. [35] Vi vælger derfor at anvende denne i vores program. Det er dog vigtigt at vi ved hvilke konsekvenser dette valg giver:
-Seriation/quasi-diagonalization:
-Seriation bygger på linkage-matricen og ordner aktiver så “nære” punkter kommer tæt i den permuterede kovarians-/korrelationsmatrix. [8] Hvis single linkage skaber chaining, kan ordenen blive mere “kædeagtig” med store, ujævne grene. Det kan give en quasi-diagonaliseret matrix med lange, smalle blokke frem for mere kompakte blokke—og dermed ændre hvilke delmængder, der “konkurrerer” i recursive bisection.
-Recursive bisection:
-I den naive bisection, splittes en ordnet aktivliste i to lige store dele, og kapital fordeles via α baseret på de to delklyngers estimerede varianser. [23] Hvis linkage-valget ændrer ordenen, ændres også hvilke aktiver der havner i samme delmængde ved tidlige splits. Dermed kan linkage-valget i praksis ændre porteføljens risikobudgettering, selv om risikomålet i bisection-trinnet er det samme.
-Referencer
-	“Clusteranalyse” (Lex, dansk nationalleksikon). [5]
-	HRP: “Building diversified portfolios that outperform out of sample” (Journal of Portfolio Management, 2016; DOI angives i CRAN-dokumentation). [44]
-	Proxy-masterafhandling (CBS, 2022): Hierarchical Risk Parity – A Hierarchical Clustering-Based Portfolio Optimization. [45]
-	Proxy-kandidatafhandling (CBS, 2023): Modern Portfolio theory: Hierarchical Risk Parity. [12]
-	Agglomerativ clustering, linkage-formler og update-skemaer: Daniel Müllner[46] (2011), Modern hierarchical, agglomerative clustering algorithms (arXiv). [47]
-	Ward-linkage (original idé): Joe H. Ward Jr.[48] (1963), Hierarchical Grouping to Optimize an Objective Function. [49]
-	Ward-implementeringer og softwarevariation: Fionn Murtagh[50] & Pierre Legendre[51] (2014), Ward’s Hierarchical Agglomerative Clustering Method: Which Algorithms Implement Ward’s Criterion? [52]
-	Finansiel korrelationsdistance og hierarkier: Rosario N. Mantegna[14] (1999), Hierarchical structure in financial markets (arXiv/Springer-indeks). [53]
-	Officielle distance-definitioner (Euclidean, Manhattan, Minkowski, Mahalanobis, Chebyshev, Canberra, cosine/angular): National Institute of Standards and Technology[54] Dataplot-dokumentation. [55]
-	HRP i R (standardvalg af linkage og pipeline fra kovarians→korrelation→distance): The Comprehensive R Archive Network[56], HierPortfolios-dokumentation. [57]
-	HRP distance-choices og alternative codependence-mål (Pearson/Spearman/Kendall/tail dependence m.fl.): Riskfolio-Lib dokumentation. [58]
-	Chaining/crowding intuition (single vs complete) i hierarkisk clustering: forelæsningsnote om hierarkisk clustering. [27]
- 
-[1] [2] [3] [4] [6] [7] [8] [9] [10] [11] [14] [16] [18] [22] [23] [28] [30] [34] [37] [38] [40] [43] [45] [46] [48] [51] [54] [56] research-api.cbs.dk
-https://research-api.cbs.dk/ws/portalfiles/portal/76452070/1332322_Master_Thesis_Hierarchical_Risk_Parity.pdf
-[5] clusteranalyse - Lex er Danmarks nationalleksikon
-https://lex.dk/clusteranalyse?utm_source=chatgpt.com
-[12] Porteføljeoptimering
-https://research-api.cbs.dk/ws/portalfiles/portal/98729294/1617211_Speciale_Final.pdf
-[13] [24] [58] Hierarchical Clustering Portfolio Optimization - Riskfolio-Lib 7.2
-https://riskfolio-lib.readthedocs.io/en/latest/hcportfolio.html
-[15] [53] Hierarchical Structure in Financial Markets
-https://arxiv.org/abs/cond-mat/9802256?utm_source=chatgpt.com
-[17] Euclidean Distance
-https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/eucldist.htm?utm_source=chatgpt.com
-[19] Manhattan Distance
-https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/mandis.htm?utm_source=chatgpt.com
-[20] Introduction to Data Mining Distances & Similarities
-https://www.ccs.neu.edu/home/vip/teach/MLcourse/6_SVM_kernels/lecture_notes/kernels/DistancesSimilarities.pdf?utm_source=chatgpt.com
-[21] [55] Matrix Distance
-https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/matrdist.htm?utm_source=chatgpt.com
-[25] [26] [31] [33] [42] [47] Modern hierarchical, agglomerative clustering algorithms
-https://arxiv.org/pdf/1109.2378
-[27] [29] [39] Hierarchical clustering
-https://www.stat.cmu.edu/~ryantibs/datamining/lectures/05-clus2.pdf?utm_source=chatgpt.com
-[32] [36] [50] [52] Ward's Hierarchical Agglomerative Clustering Method
-https://www.numericalecology.com/Reprints/Murtagh_Legendre_J_Class_2014.pdf?utm_source=chatgpt.com
-[35] R: Hierarchical Risk Parity
-https://search.r-project.org/CRAN/refmans/HierPortfolios/html/HRP_Portfolio.html?utm_source=chatgpt.com
-[41] [57] Hierarchical Risk Clustering Portfolio Allocation Strategies
-https://cran.r-project.org/web/packages/HierPortfolios/HierPortfolios.pdf?utm_source=chatgpt.com
-[44] CRAN: Package HierPortfolios - R-project.org
-https://cran.r-project.org/package%3DHierPortfolios?utm_source=chatgpt.com
-[49] Hierarchical Grouping to optimize an objective function
-https://iv.cns.iu.edu/sw/data/ward.pdf?utm_source=chatgpt.com
-Executive summary
-Hierarchical Risk Parity (HRP) er en heuristisk porteføljeallokeringsmetode, der kombinerer hierarkisk clustering og risikobudgettering for at konstruere diversificerede vægte uden at løse et klassisk kvadratisk optimeringsproblem. Den centrale idé er at udlede en hierarkisk træstruktur over aktiver ud fra en afstand (typisk afledt af korrelation), omordne kovariansmatricen (quasi-diagonalization/seriation) efter træets bladorden og derefter allokere vægte via en rekursiv top-down bisection, hvor kapital fordeles mellem delklynger proportionalt med (inverse) estimeret risiko. [1]
-Dette teoriafsnit fremhæver, at HRP’s praktiske egenskaber i høj grad bestemmes af to designvalg i “clustering-leddet”: (i) afstandsmål (hvordan “kodependens” mellem aktiver omsættes til en metrik/dissimilaritet) og (ii) linkage-kriterium (hvordan afstand mellem klynger beregnes). Standard HRP anvender en korrelationsbaseret afstandstransformation d_ij=√(1⁄2 (1-ρ_ij ) ) og single linkage som standard-linkage, men både afstand og linkage varierer på tværs af implementeringer og kan ændre træets struktur, quasi-diagonalization og dermed risikofordelingen i de endelige vægte. [2]
+En særlig detalje ved HRP som ofte overses, er konstruktionen af en sekundær afstand $\tilde{D}$, hvor man måler euklidisk afstand mellem kolonnerne i den oprindelige distance matrix $D$. Dette kan beskrives som en euklidisk distance matrix $\tilde{D}=\{\tilde{d}_{ij}\}$ med:~\cite{kaae_karppinen_hierarchical_2022}
+\[
+    \tilde{d}_{ij}=\sqrt{\sum_{n=1}^{N}(d_{n,i}-d_{n,j})^2}.
+\]
+
+Intuitionen er, at to aktiver er ``lignende'', hvis deres afstandsprofil til alle andre aktiver er lignende (systemisk, ikke kun parvist). I HRP kan dette gøre træet mere følsomt over for hele korrelationsstrukturen (netværksperspektiv), hvilket igen påvirker seriation og blokstruktur i quasi-diagonalization.~\cite{kaae_karppinen_hierarchical_2022}
+
+\subsection{Linkage-kriterier og deres konsekvenser i HRP}
+
+Tidligere blev der beskrevet hvordan agglomerativ hierarkisk clustering starter med $N$ singleton-klynger og fusionerer iterativt de to nærmeste klynger. Det afgørende valg der bestemmer hvordan disse bliver dannet, er linkage. Linkage-valget ændrer ikke blot dendrogrammets ``æstetik'', men også hvilke geometriske former, der accepteres som klynger, og dermed HRP's blokstruktur og risikofordeling. For at kunne vælge den bedst mulige løsning er det nødvendigt at få et overblik over de mest brugte linkagetyper. Notationen brugt i denne sammenhæng er givet ved: $I$ og $J$ er to klynger som fusionereres. $K$ er en anden klynge. Her er $d(I \cup J,K)$ den opdaterede klynge.
+
+\paragraph{Single linkage.}
+\[
+    d(I \cup J,K)=\min(d(I,K),d(J,K)).
+\]
+Single linkage er den mest enkelte linkagetype og kræver ikke meget beregningsintensitet. Den kræver kun ét nært par punkter for at fusionere klynger og kan derfor skabe kædeformede klynger (chaining). Problemet med single linkage er at den ``suffers from chaining'', fordi fusion kan ske på baggrund af én tæt forbindelse uanset resten af punkterne; resultatet kan blive spredte, ikke-kompakte klynger. Dette betyder også at den er mere sensitiv overfor outliers.~\cite{tibshirani_hierarchical_2013}
+
+\paragraph{Complete linkage.}
+\[
+    d(I \cup J,K)=\max(d(I,K),d(J,K)).
+\]
+Complete linkage er modsætningen til Single linkage. Den tager den maksimale distance mellem to punkter i hver sin klynge. Complete linkage undgår chaining, men kan give ``crowding'', fordi den baserer sig på worst-case afstand i en klynge. Dermed kan den også blive følsom over for ekstreme observationer/outliers og presse klynger til at være meget kompakte.~\cite{tibshirani_hierarchical_2013}
+
+\paragraph{Average linkage.}
+\[
+    d(I \cup J,K)=\frac{n_I d(I,K)+n_J d(J,K)}{n_I+n_J}
+\]
+Her er $n_I,n_J$ antal punkter i hver klynge.
+
+Average linkage ligger mellem single og complete og kan ofte give mere balancerede dendrogrammer.~\cite{mullner_modern_2011} Den vælger gennemsnittet af distancen for alle punkter i de to klynger og er dermed mere immun overfor outliers. Selvom denne type er mere balanceret end de andre typer, er der en vigtig forskel man skal tage med i sin overvejelse. Denne type er ikke invariant over for monotone transformationer af afstande, fordi den gennemsnitter afstande. Dette er i modsætning til single og complete linkage som bevarer den relative orden af afstande. Det betyder, at hvis man skalerer/transformerer korrelationsafstande, kan average linkage ændre fusionsrækkefølgen og dermed HRP-seriationen.~\cite{kaae_karppinen_hierarchical_2022}
+
+\paragraph{Ward.}
+Ward-linkage (minimum variance) giver typisk kompakte klynger og kan reducere chaining, men er samtidig følsom over for implementeringsdetaljer. Wards metode måler ikke direkte distance, men i stedet den samlede stigning i within-cluster varians når to klynger fusionere. I praksis kan dette gøres på forskellige måder, men ofte minimerer man kvardratsummen mellem klyngerne. Der er dog dokumenterede tilfælde, hvor forskellige software pakker påstår at implementere Ward, men giver forskellige resultater. Dette er metodisk vigtigt i HRP, fordi forskelle i dendrogram kan føre til forskellig quasi-diagonalization og dermed forskellige vægte, selv med samme data.~\cite{murtagh_legendre_ward_2014}
+
+\subsubsection{Hvilket linkage bruger standard HRP, og hvad betyder det for seriation og bisection?}
+
+Som udgangspunkt benytter HRP single linkage som linkage-kriterium.~\cite{kaae_karppinen_hierarchical_2022} Dette bekræftes i officiel R-dokumentation for HRP-porteføljer, hvor ``single'' er default linkage i en HRP-funktion.~\cite{trucios_hrp_portfolio_nodate} Vi vælger derfor at anvende denne i vores program. Det er dog vigtigt at vi ved hvilke konsekvenser dette valg giver:
+
+\paragraph{Seriation/quasi-diagonalization.}
+Seriation bygger på linkage-matricen og ordner aktiver så ``nære'' punkter kommer tæt i den permuterede kovarians-/korrelationsmatrix.~\cite{kaae_karppinen_hierarchical_2022} Hvis single linkage skaber chaining, kan ordenen blive mere ``kædeagtig'' med store, ujævne grene. Det kan give en quasi-diagonaliseret matrix med lange, smalle blokke frem for mere kompakte blokke, og dermed ændre hvilke delmængder, der ``konkurrerer'' i recursive bisection.
+
+\paragraph{Recursive bisection.}
+I den naive bisection, splittes en ordnet aktivliste i to lige store dele, og kapital fordeles via $\alpha$ baseret på de to delklyngers estimerede varianser.~\cite{kaae_karppinen_hierarchical_2022} Hvis linkage-valget ændrer ordenen, ændres også hvilke aktiver der havner i samme delmængde ved tidlige splits. Dermed kan linkage-valget i praksis ændre porteføljens risikobudgettering, selv om risikomålet i bisection-trinnet er det samme.
+
+\subsection{Executive summary}
+
+Hierarchical Risk Parity (HRP) er en heuristisk porteføljeallokeringsmetode, der kombinerer hierarkisk clustering og risikobudgettering for at konstruere diversificerede vægte uden at løse et klassisk kvadratisk optimeringsproblem. Den centrale idé er at udlede en hierarkisk træstruktur over aktiver ud fra en afstand (typisk afledt af korrelation), omordne kovariansmatricen (quasi-diagonalization/seriation) efter træets bladorden og derefter allokere vægte via en rekursiv top-down bisection, hvor kapital fordeles mellem delklynger proportionalt med (inverse) estimeret risiko.~\cite{lopez_de_prado_building_2016,kaae_karppinen_hierarchical_2022}
+
+Dette teoriafsnit fremhæver, at HRP's praktiske egenskaber i høj grad bestemmes af to designvalg i ``clustering-leddet'': (i) afstandsmål (hvordan ``kodependens'' mellem aktiver omsættes til en metrik/dissimilaritet) og (ii) linkage-kriterium (hvordan afstand mellem klynger beregnes). Standard HRP anvender en korrelationsbaseret afstandstransformation $d_{ij}=\sqrt{\frac{1}{2}(1-\rho_{ij})}$ og single linkage som standard-linkage, men både afstand og linkage varierer på tværs af implementeringer og kan ændre træets struktur, quasi-diagonalization og dermed risikofordelingen i de endelige vægte.~\cite{lopez_de_prado_building_2016,trucios_hrp_portfolio_nodate,kaae_karppinen_hierarchical_2022}
 
 En standardiseret HRP-pipeline kan beskrives i tre trin:
-(i) Tree clustering: Estimér en korrelationsmatrix ρ={ρ_ij} fra afkastdata og konstruér en afstandsmatrix D={d_ij} via en transformation, så afstand opfylder metriske krav. I HRP-litteraturen fremhæves eksplicit, at korrelation i sig selv ikke er en afstandsmetrik, og at der derfor anvendes en transformation for at opnå symmetri, ikke-negativitet, identitet og trekantsulighed. [7]
-(ii) Quasi-diagonalization (seriation): Omordn kovarians-/korrelationsmatricen, så “lignende” aktiver (ifølge træet) placeres tæt, og store kovarianser koncentreres langs diagonalen. Dette er ikke en basis-transformation, men en permutation af rækker/kolonner styret af linkage-matricen fra clustering-trinnet. [8]
-(iii) Recursive bisection: Allokér vægte top-down ved gentagne splits af den ordnede aktivliste. Variansen af en delklynge estimeres med inverse-variance-vægte, og kapital fordeles mellem to subklynger ved en split-faktor α, så den mere risikofyldte subklynge skaleres ned. [9]
-Matematisk fremgår disse trin tydeligt i standardiserede fremstillinger: Efter seriation beregnes fx delklyngevarians som Var(L_i^((j) ) )=(w_i^((j) ) )^⊤ Σ_i^S w_i^((j) ), hvor w_i^((j) ) er inverse-variance-vægte inden for delklyngen, w_i^((j) )=diag(Σ_i^S )^(-1)/tr(diag(Σ_i^S )^(-1) ). [10] Split-faktoren kan for to delklynger skrives som α_1=1-Var(L_i^((1) ) )/(Var(L_i^((1) ) )+Var(L_i^((2) ) ) ) og α_2=1-α_1, hvorefter vægtene reskaleres rekursivt. [9]
-HRP’s praktiske robusthedsmotivation formuleres ofte som et alternativ til metoder, der kræver (stabil) inversion af kovariansmatricen; i proxy-afhandlingen fremhæves, at HRP ikke kræver kovariansmatricen positiv definit. [11] Samtidig bemærkes det i en anden proxy-afhandling, at sample-estimater af afkast og kovarians kan have store estimeringsfejl, og at risk-baserede metoder (inkl. HRP) søger at reducere fejlens effekt. [12]
-Alternative HRP-implementeringer
-I nyere HRP-implementeringer andvendes ofte flere korrelations-valg end Pearson. F.eks. dokumenterer en udbredt porteføljeoptimeringspakke afstandsformler for Spearman, Kendall, absolut korrelation, distance korrelation, gensidig information og hale afhængighed. [13] Det ville betyde at rank-korrelationer (Spearman/Kendall) kan gøre træet mindre følsomt over for ekstreme observationer og ikke-normalitet i afkast, hvilket øger robustheden. [13]
-- Tail dependence kan skabe klynger drevet af fælles downside-episoder snarere end gennemsnitskorrelation, hvilket kan ændre risikobudgettering i recursive bisection mod klyngevis “kriserisiko”. [13]
-- Mutual information / distance correlation kan (i princippet) fange ikke-lineær afhængighed, men typisk med højere estimationsusikkerhed og beregningsomkostninger; i HRP kan det give mere kompleks, men potentielt mindre stabil, træstruktur. [24]
+\begin{enumerate}
+    \item Tree clustering: Estimér en korrelationsmatrix $\rho=\{\rho_{ij}\}$ fra afkastdata og konstruér en afstandsmatrix $D=\{d_{ij}\}$ via en transformation, så afstand opfylder metriske krav. I HRP-litteraturen fremhæves eksplicit, at korrelation i sig selv ikke er en afstandsmetrik, og at der derfor anvendes en transformation for at opnå symmetri, ikke-negativitet, identitet og trekantsulighed.~\cite{lopez_de_prado_building_2016,kaae_karppinen_hierarchical_2022}
+    \item Quasi-diagonalization (seriation): Omordn kovarians-/korrelationsmatricen, så ``lignende'' aktiver (ifølge træet) placeres tæt, og store kovarianser koncentreres langs diagonalen. Dette er ikke en basis-transformation, men en permutation af rækker/kolonner styret af linkage-matricen fra clustering-trinnet.~\cite{kaae_karppinen_hierarchical_2022}
+    \item Recursive bisection: Allokér vægte top-down ved gentagne splits af den ordnede aktivliste. Variansen af en delklynge estimeres med inverse-variance-vægte, og kapital fordeles mellem to subklynger ved en split-faktor $\alpha$, så den mere risikofyldte subklynge skaleres ned.~\cite{kaae_karppinen_hierarchical_2022}
+\end{enumerate}
 
+Matematisk fremgår disse trin tydeligt i standardiserede fremstillinger: Efter seriation beregnes fx delklyngevarians som
+\[
+    \operatorname{Var}(L_i^{(j)})=(w_i^{(j)})^\top \Sigma_i^S w_i^{(j)},
+\]
+hvor $w_i^{(j)}$ er inverse-variance-vægte inden for delklyngen,
+\[
+    w_i^{(j)}=\operatorname{diag}(\Sigma_i^S)^{-1}/\operatorname{tr}(\operatorname{diag}(\Sigma_i^S)^{-1}).
+\]
+Split-faktoren kan for to delklynger skrives som
+\[
+    \alpha_1=1-\frac{\operatorname{Var}(L_i^{(1)})}{\operatorname{Var}(L_i^{(1)})+\operatorname{Var}(L_i^{(2)})}
+    \qquad \text{og} \qquad
+    \alpha_2=1-\alpha_1,
+\]
+hvorefter vægtene reskaleres rekursivt.~\cite{kaae_karppinen_hierarchical_2022}
 
-\subsection{Referencer}
+HRP's praktiske robusthedsmotivation formuleres ofte som et alternativ til metoder, der kræver (stabil) inversion af kovariansmatricen; i proxy-afhandlingen fremhæves, at HRP ikke kræver kovariansmatricen positiv definit.~\cite{kaae_karppinen_hierarchical_2022} Samtidig bemærkes det i en anden proxy-afhandling, at sample-estimater af afkast og kovarians kan have store estimeringsfejl, og at risk-baserede metoder (inkl. HRP) søger at reducere fejlens effekt.~\cite{jensen_brix_modern_2023}
+
+\subsubsection{Alternative HRP-implementeringer}
+
+I nyere HRP-implementeringer andvendes ofte flere korrelations-valg end Pearson. F.eks. dokumenterer en udbredt porteføljeoptimeringspakke afstandsformler for Spearman, Kendall, absolut korrelation, distance korrelation, gensidig information og hale afhængighed.~\cite{cajas_hcportfolio_nodate} Det ville betyde at rank-korrelationer (Spearman/Kendall) kan gøre træet mindre følsomt over for ekstreme observationer og ikke-normalitet i afkast, hvilket øger robustheden.
+
+\begin{itemize}
+    \item Tail dependence kan skabe klynger drevet af fælles downside-episoder snarere end gennemsnitskorrelation, hvilket kan ændre risikobudgettering i recursive bisection mod klyngevis ``kriserisiko''.~\cite{cajas_hcportfolio_nodate}
+    \item Mutual information / distance correlation kan (i princippet) fange ikke-lineær afhængighed, men typisk med højere estimationsusikkerhed og beregningsomkostninger; i HRP kan det give mere kompleks, men potentielt mindre stabil, træstruktur.~\cite{cajas_hcportfolio_nodate}
+\end{itemize}
+
+\ifSubfilesClassLoaded{
+    \bibliographystyle{plain}
+    \bibliography{../references}
+}{}
+
 \end{document}
