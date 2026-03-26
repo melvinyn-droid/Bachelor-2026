@@ -52,18 +52,4 @@ Det er metodisk vigtigt, fordi et afkastmål baseret alene på \texttt{RET} vil 
 
 
 
-\subsection{Manglende observationer og datakrav}
-
-Et centralt træk ved finansielle datasæt er, at ikke alle aktier observeres i alle måneder. Nogle selskaber børsnoteres sent i måneden, andre afnoteres undervejs, og for enkelte observationer kan de brugte variable mangle. Databehandlingen skal derfor fastlægge, hvordan sådanne manglende observationer håndteres, så det endelige datasæt bliver metodisk konsistent.
-
-I implementering stilles der et eksplicit datakrav til aktiernes historik i estimeringsvinduet. En aktie kan kun indgå i universet i en given evalueringsmåned, hvis den er observeret i mindst en andel på $95\%$ af estimeringsmånederne. Med et lookback-vindue på $120$ måneder betyder dette, at aktien skal have observerede afkast i mindst
-\[
-\lceil 0.95 \cdot 120 \rceil = 114
-\]
-måneder for at blive indkluderet i universet. Aktiver med for kort eller for ujævn historik udelades dermed allerede inden estimeringen af kovarians- og korrelationsmatricerne.
-
-Når aktierne opfylder kravet , estimeres kovarians- og korrelationsmatricerne på baggrund af de tilgængelige observationer i det valgte estimationsvindue uden yderligere sletning af hele måneder. Det indebærer, at de enkelte kovarians- og korrelationselementer kan være estimeret på forskellige underliggende overlap mellem aktiverne.
-
-Disse datakrav indebærer en klar afvejning. På den ene side forbedrer de konsistensen i datagrundlaget ved at udelukke aktiver med utilstrækkelig historik. På den anden side reducerer de det effektive antal observationer og kan føre til, at det endelige estimationsgrundlag bliver mindre end den nominelle dataperiode. Den endelige stikprøve bestemmes derfor ikke alene af datasættets samlede længde, men også af hvor mange observationer der faktisk opfylder kravene til historik og datakvalitet.
-
 \end{document}

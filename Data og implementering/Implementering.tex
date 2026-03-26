@@ -2,24 +2,84 @@
 % Denne fil kompileres via main.tex.
 \documentclass[../main.tex]{subfiles}
 \usepackage{graphicx}
-
+\usepackage{amsmath}
 \begin{document}
 \section{Implementering}
 
 \subsection{Investeringsunivers og datakrav}
+ 
+
+Som tidligere gennemgået har vi valgt at kun anvende ordinære selskabsaktier fra NASDAQ, AMEX og NYSE, for at sikre et homogent datasæt. For opgaven giver denne afgrænsning også fordele ved at kunne se hvorvidt de aktier i forskellige sektorer påvirker hinanden. Dermed er blandt andet korrelationerne mere virkelige og giver en form for intuition til hvordan HRP grupperer aktierne sammen og danner korrelationstrukturerne. 
+
+Hvorfor vælger vi at bruge N antal aktier, og n antal måneder
+
+
+Et centralt træk ved finansielle datasæt er, at ikke alle aktier observeres i alle måneder. Nogle selskaber børsnoteres sent i måneden, andre afnoteres undervejs, og for enkelte observationer kan de brugte variable mangle. Programmet skal derfor fastlægge, hvordan sådanne manglende observationer håndteres, så det endelige datasæt bliver metodisk konsistent.
+
+I implementering stilles der et eksplicit datakrav til aktiernes historik i estimeringsvinduet. En aktie kan kun indgå i universet i en given evalueringsmåned, hvis den er observeret i mindst en andel på $95\%$ af estimeringsmånederne. Med et lookback-vindue på $120$ måneder betyder dette, at aktien skal have observerede afkast i mindst
+\[
+\lceil 0.95 \cdot 120 \rceil = 114
+\]
+måneder for at blive indkluderet i universet. Aktiver med for kort eller for ujævn historik udelades dermed allerede inden estimeringen af kovarians- og korrelationsmatricerne.
+
+Når aktierne opfylder kravet, estimeres kovarians- og korrelationsmatricerne på baggrund af de tilgængelige observationer i det valgte estimationsvindue uden yderligere sletning af hele måneder. Det indebærer, at de enkelte kovarians- og korrelationselementer kan være estimeret på forskellige underliggende overlap mellem aktiverne. 
+
+Disse datakrav indebærer en klar afvejning. På den ene side forbedrer de konsistensen i datagrundlaget ved at udelukke aktiver med utilstrækkelig historik. På den anden side reducerer de det effektive antal observationer og kan føre til, at det endelige estimationsgrundlag bliver mindre end den faktiske dataperiode. Den endelige stikprøve bestemmes derfor ikke alene af datasættets samlede længde, men også af hvor mange observationer der faktisk opfylder kravene til historik og datakvalitet.
+
+
 
 \subsection{Walk forward analyse}
+
+Vi vælger at bruge en Walk Forward analyse da den betragtes som Gold Standard indenfor test af finansielle handelsstrategier. Analysen er valgt for at sikre en konsistent testmetode for kunne vurdere de forskellige porteføljers præstation indenfor forskellige testmål. En Walk Forward analyse består af en in-sample test og en out-of-sample test. Hovedmålet er have en trænings/dataperiode at træne modellen på i in-sample perioden og en test periode som er out-sample for at kunne måle præstationen uden nogen Look Ahead Bias. Dette sikrer at der ikke er noget overlap mellem perioderne der fører til integritet at vores test. 
+I in-sample perioden estimeres korrelationstrukturerne på baggrund af 120 måneders datapunkter til implementering i de udvalgte metoder. I out-of-sample perioden bruges en månedsdata til at vurdere. Walk forward testen kører iterativt og mellem hver iteration, forskydes in-sample og out-of-sample perioden med en måned. Den valgte metode kaldes backtesting indenfor Walk forward analyser
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.5\linewidth]{Data og implementering/walk_forward_120m.png}
+    \includegraphics[width=1\linewidth]{Data og implementering/walk_forward_120m.png}
     \caption{Walk forward backtest}
     \label{fig:Walk forward}
 \end{figure}
 
 \subsection{Estimation af kovarians- og korrelationsmatricer}
+Vi bruger python pakken Pandas til at estimere kovariansen mellem aktiv i og j. Det estimeres på baggrund af de måneder hvor begge aktiver har observeret data, istedet for alle måneder. Dermed kan kan den estimerede kovarians mellem aktiv i og j være baseret på andre måneder end j og k. Det har som konsekvens at det kan skabe mere numerisk ustabilitet, dog sikrer det flere observationsdatapunkter for det samlede estimat. 
+
+Pandas beregner stikprøveestimatoren mellem aktiv i og j 
+\begin{equation}
+    \hat{\sigma}_{ij} = \frac{1}{T_{ij} - 1} \sum_{t \in T_{ij}} \left( r_{i,t} - \bar{r}_i \right) \left( r_{j,t} - \bar{r}_j \right)
+    \label{eq:placeholder_label}
+\end{equation}
+Hvor $T_{i,j}$ er datapunkter begget aktiver har data. Gennemsnittene $\bar{r}_{i,j}$ beregnes også kun over $T_{i,j}$. Nævneren $T_{i,j}-1$ er Bessels korrektion der sikrer en unbiased estimator $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.\cite{noauthor_pandasdataframecov_nodate}
+
+Korrelationen mellem aktiver bliver estimeret med
+\begin{equation}
+    \hat{\rho}_{ij} = \frac{\hat{\sigma}_{ij}}{\hat{\sigma}_i \cdot \hat{\sigma}_j}
+    \label{eq:placeholder_label}
+\end{equation} 
+Hvor samme antagelser med estimationsmåneder gælder, samt $\hat{\sigma}_i=\sqrt{\hat{\sigma}_{i,i}}$
+
 \subsubsection{Konditionstal}
+Konditionstallet bliver brugt som en diagnotiseringskilde i programmet. Numpy pakken bruges for at beregne den konsistent, hvor den er defineret som:
+\begin{equation}
+    \kappa(\Sigma) = \frac{\lambda_{\max}}{\lambda_{\min}}
+    \label{eq:placeholder_label}
+\end{equation}
+Hvor $\lambda_{\max,\min}$ er de største og mindske egenværdier for stikprøvekovariansmatricen.
 
 \subsection{Implementering af klassiske porteføljeoptimeringsmetoder}
+
+I Equal Weight metoden bruges Numpy pakken igen ved for at finde vægtene
+
+\begin{equation}
+    w=1/N
+    \label{eq:placeholder_label}
+\end{equation}
+
+
+\subsubsection{Klassisk Minimum Varians}
+
+Den lukkede løsning i ligning for Minimum Varians kræver beregning af $\Sigma^{-1}\mathbf{1}$. I implementeringen foretages dette ikke ved eksplicit matrixinversion, men ved at løse det lineære system $\Sigma z = \mathbf{1}$ med en direkte numerisk metode baseret på LU-dekomposition. Denne fremgangsmåde reducerer akkumuleringen af afrundingsfejl, da kun den relevante højreside løses for. Den resulterende vektor normaliseres herefter som $w = z / \sum_i z_i$.
+
+Forud for løsningen verificeres det, at kovariansmatricen har fuld rang. Hvis rangen er lavere end $N$, returnerer metoden ingen løsning.
 
 \subsection{Implementering af HRP}
 
