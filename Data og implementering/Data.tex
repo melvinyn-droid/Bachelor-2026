@@ -7,36 +7,36 @@
 
 \subsection{Datakilde og afgrænsning}
 
-Det anvendte datasæt er fra CRSP og er eksporteret via Wharton Research Data Services (WRDS). Datasættet består af månedlige observationer for amerikanske aktier i perioden fra januar 1990 til december 2024. I den videre analyse afgrænses datasættet til almindelige selskabsaktier handlet på NYSE, AMEX og NASDAQ. Denne afgrænsning foretages ved hjælp af CRSP-variablerne \texttt{SHRCD} og \texttt{EXCHCD}, hvor vi alene medtager observationer med \texttt{SHRCD} $\in \{10,11\}$ og \texttt{EXCHCD} $\in \{1,2,3\}$.
+Det anvendte datasæt stammer fra CRSP og er eksporteret via Wharton Research Data Services (WRDS). Datasættet består af månedlige observationer for amerikanske aktier i perioden fra januar 1990 til december 2024. I den videre analyse afgrænses datasættet til ordinære selskabsaktier handlet på NYSE, AMEX og NASDAQ. Denne afgrænsning foretages ved hjælp af CRSP-variablerne \texttt{SHRCD} og \texttt{EXCHCD}, hvor vi alene medtager observationer med \texttt{SHRCD} $\in \{10,11\}$ og \texttt{EXCHCD} $\in \{1,2,3\}$.
 
-Afgrænsningen har to formål. For det første sikrer den, at analysen fokuserer på ordinære børsnoterede amerikanske aktier og dermed udelukker værdipapirer med en anden økonomisk struktur, som for eksempel fonde eller andre aktieklasser, som ikke er direkte sammenlignelige med almindelige selskabsaktier. For det andet reducerer den heterogeniteten i datasættet og gør det mere egnet til porteføljeanalyse. Fordi at sammenlignelige afkast- og risikostrukturer ønskes tværs af et samlet investeringsunivers.
+Afgrænsningen har to formål. For det første sikrer den, at analysen fokuserer på ordinære, børsnoterede amerikanske aktier og dermed udelukker værdipapirer med en anden økonomisk struktur, såsom fonde eller andre aktieklasser, der ikke er direkte sammenlignelige med almindelige selskabsaktier. For det andet reducerer den heterogeniteten i datasættet og gør det mere egnet til porteføljeanalyse, fordi vi ønsker sammenlignelige afkast- og risikostrukturer på tværs af det samlede investeringsunivers.
 
-Vi har valgt at anvende datasættet fra CRSP, da det er særligt velegnet til denne type analyse. Databasen indeholder både historiske afkastserier, samt registrerer hændelser som afnoteringer på selskabsniveau. Det er vigtigt i empiriske porteføljestudier, fordi datasættet dermed ikke alene består af selskaber, som overlever til slutningen af perioden. Dermed fremstår både aktive og senere afnoterede aktier inden for den valgte periode, der medfører et mere retvisende billede af investeringsuniverset.
+Vi har valgt at anvende datasættet fra CRSP, da det er særligt velegnet til denne type analyse. Databasen indeholder både historiske afkastserier og registrerer hændelser som afnoteringer på selskabsniveau. Det er vigtigt i empiriske porteføljestudier, fordi datasættet dermed ikke alene består af selskaber, der overlever til slutningen af perioden. Både aktive og senere afnoterede aktier indgår derfor i den valgte periode, hvilket giver et mere retvisende billede af investeringsuniverset.
 
 \subsection{Variabler}
 
 Datasættet indeholder variablerne \texttt{PERMNO}, \texttt{date}, \texttt{RET}, \texttt{DLRET}, \texttt{PRC}, \texttt{SHROUT}, \texttt{EXCHCD} og \texttt{SHRCD}. \texttt{PERMNO} fungerer som en entydig identifikation af den enkelte aktie gennem hele perioden, mens \texttt{date} angiver observationstidspunktet.
 
-For analysen er to typer variable særligt centrale. Den første er afkastvariable, hvor \texttt{RET} angiver det ordinære månedlige afkast, og \texttt{DLRET} angiver et eventuelt afnoteringsafkast. Den anden er størrelsesvariablerne, hvor \texttt{PRC} som er aktieprisen og \texttt{SHROUT} som er antal aktier anvendes til at beregne markedsstørrelsen for det enkelte aktiv. Bemærk at vi tager den absolutte værdi af \texttt{PRC} da den kan være registreret med negativt fortegn. Dette betyder ikke, at aktieprisen er økonomisk negativ, men at CRSP har anvendt et bid-ask gennemsnit i stedet for en faktisk closing price.
+For analysen er to typer variabler særligt centrale. Den første er afkastvariabler, hvor \texttt{RET} angiver det ordinære månedlige afkast, og \texttt{DLRET} angiver et eventuelt afnoteringsafkast. Den anden er størrelsesvariabler, hvor \texttt{PRC}, som er aktieprisen, og \texttt{SHROUT}, som er antallet af aktier, anvendes til at beregne markedsstørrelsen for det enkelte aktiv. Bemærk, at vi anvender den absolutte værdi af \texttt{PRC}, da variablen kan være registreret med negativt fortegn. Dette betyder ikke, at aktieprisen er økonomisk negativ, men at CRSP har anvendt et bid-ask-gennemsnit i stedet for en faktisk slutkurs.
 \begin{equation}
-    \label{eq:placeholder_label}
+    \label{eq:market_cap}
     \text{Market Cap}_{i,t} = \left| \text{PRC}_{i,t} \right| \cdot \text{SHROUT}_{i,t}
 \end{equation}
 
-Disse variable danner tilsammen grundlag for analysens videre databehandling, da markedsstørrelsen bruges til at bestemme TOP N universet.
+Disse variabler danner tilsammen grundlag for analysens videre databehandling, da markedsstørrelsen bruges til at bestemme top-$N$-universet.
 
 \subsection{Analyseperiode}
 
-Rådatasættet dækker perioden fra januar 1990 til december 2024. Der skelnes mellem dataens samlede dækningsperiode og den periode, hvor porteføljerne faktisk kan evalueres. Da analysen baseres på historiske observationsvinduer, kræver den første evaluering, at der allerede foreligger et tilstrækkeligt antal tidligere observationerserier. Dette kommer vi nærmere på i implementeringsafsnittet.
+Rådatasættet dækker perioden fra januar 1990 til december 2024. Der skelnes mellem dataens samlede dækningsperiode og den periode, hvor porteføljerne faktisk kan evalueres. Da analysen baseres på historiske observationsvinduer, kræver den første evaluering, at der allerede foreligger et tilstrækkeligt antal tidligere observationsserier. Dette uddybes i implementeringsafsnittet.
 
 
 \section{Databehandling}
 
 \subsection{Rensning og filtrering af observationer}
 
-Databehandlingen starter med en rensning af rådata, så datasættet bliver konsistent og anvendeligt til den videre analyse. Først standardiseres variabelnavne, og konverteres til numerisk format, hvor det er relevant. Datoformatet omdannes herefter, så observationerne kan identificeres på månedsniveau.
+Databehandlingen starter med en rensning af rådata, så datasættet bliver konsistent og anvendeligt til den videre analyse. Først standardiseres variabelnavne og konverteres til numerisk format, hvor det er relevant. Datoformatet omdannes herefter, så observationerne kan identificeres på månedsniveau.
 
-Observationer uden gyldig identifikation eller dato udelades. Konkret fjernes observationer, hvor enten \texttt{PERMNO} eller \texttt{date} mangler. Herefter sorteres datasættet efter identifikation og dato, og eventuelle dubletter på kombinationen af \texttt{PERMNO} og dato fjernes, så der kun bevares en observation pr. aktie pr. måned. Denne rensning er nødvendig for at sikre, at de samme observationer et konsistent datasæt.
+Observationer uden gyldig identifikation eller dato udelades. Konkret fjernes observationer, hvor enten \texttt{PERMNO} eller \texttt{date} mangler. Herefter sorteres datasættet efter identifikation og dato, og eventuelle dubletter på kombinationen af \texttt{PERMNO} og dato fjernes, så der kun bevares én observation pr. aktie pr. måned. Denne rensning er nødvendig for at sikre et konsistent datasæt, hvor hver observation er entydigt identificeret.
 
 Efter denne indledende rensning foretages den endelige afgrænsning til almindelige selskabsaktier noteret på NYSE, AMEX og NASDAQ. 
 
@@ -46,9 +46,9 @@ Det månedlige afkast konstrueres med udgangspunkt i både det ordinære månedl
 \begin{equation}
     r_{i,t}^{\text{total}} = (1+\texttt{RET}_{i,t})(1+\texttt{DLRET}_{i,t}) - 1.
 \end{equation}
-Denne konstruktion har konsekvensen, at hvis en aktie afnoteres i en given måned, indgår den tilhørende afnoteringsafkast i det samlede afkastet.
+Denne konstruktion indebærer, at hvis en aktie afnoteres i en given måned, indgår det tilhørende afnoteringsafkast i det samlede afkast.
 
-Det er metodisk vigtigt, fordi et afkastmål baseret alene på \texttt{RET} vil give et skævt billede af de faktiske afkast for aktier, der forlader markedet. Ved at inkludere \texttt{DLRET} opnås et mere retvisende mål for det samlede afkast, som investoren faktisk ville have optjent i den pågældende måned. Hvis en af de afkastmål er fraværende i dataen har det altså ingen effekt på afkastet.
+Det er metodisk vigtigt, fordi et afkastmål baseret alene på \texttt{RET} vil give et skævt billede af de faktiske afkast for aktier, der forlader markedet. Ved at inkludere \texttt{DLRET} opnås et mere retvisende mål for det samlede afkast, som investoren faktisk ville have optjent i den pågældende måned. Hvis en af de to afkastvariabler er fraværende i data, har det derfor ingen effekt på det samlede afkast.
 
 
 

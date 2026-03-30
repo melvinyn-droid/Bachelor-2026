@@ -9,18 +9,18 @@
 \subsection{Investeringsunivers og datakrav}
  
 
-Som tidligere gennemgået har vi valgt at kun anvende ordinære selskabsaktier fra NASDAQ, AMEX og NYSE, for at sikre et homogent datasæt. For opgaven giver denne afgrænsning også fordele ved at kunne se hvorvidt de aktier i forskellige sektorer påvirker hinanden. Dermed er blandt andet korrelationerne mere virkelige og giver en form for intuition til hvordan HRP grupperer aktierne sammen og danner korrelationstrukturerne. 
+Som tidligere gennemgået anvender vi kun ordinære selskabsaktier fra NASDAQ, AMEX og NYSE for at sikre et homogent datasæt. For opgaven giver denne afgrænsning også den fordel, at vi bedre kan undersøge, om aktier i forskellige sektorer påvirker hinanden. Dermed bliver de estimerede korrelationer mere sammenlignelige og giver en bedre intuition for, hvordan HRP grupperer aktierne og danner korrelationsstrukturer.
 
-Hvorfor vælger vi at bruge N antal aktier, og n antal måneder
+Vi arbejder samtidig med et fast antal aktier og et fast antal måneder i estimeringsvinduet for at sikre, at metoderne sammenlignes på et ensartet grundlag over tid.
 
 
-Et centralt træk ved finansielle datasæt er, at ikke alle aktier observeres i alle måneder. Nogle selskaber børsnoteres sent i måneden, andre afnoteres undervejs, og for enkelte observationer kan de brugte variable mangle. Programmet skal derfor fastlægge, hvordan sådanne manglende observationer håndteres, så det endelige datasæt bliver metodisk konsistent.
+Et centralt træk ved finansielle datasæt er, at ikke alle aktier observeres i alle måneder. Nogle selskaber børsnoteres sent i perioden, andre afnoteres undervejs, og for enkelte observationer kan de anvendte variabler mangle. Programmet skal derfor fastlægge, hvordan sådanne manglende observationer håndteres, så det endelige datasæt bliver metodisk konsistent.
 
-I implementering stilles der et eksplicit datakrav til aktiernes historik i estimeringsvinduet. En aktie kan kun indgå i universet i en given evalueringsmåned, hvis den er observeret i mindst en andel på $95\%$ af estimeringsmånederne. Med et lookback-vindue på $120$ måneder betyder dette, at aktien skal have observerede afkast i mindst
+I implementeringen stilles der et eksplicit datakrav til aktiernes historik i estimeringsvinduet. En aktie kan kun indgå i universet i en given evalueringsmåned, hvis den er observeret i mindst $95\%$ af estimeringsmånederne. Med et lookback-vindue på $120$ måneder betyder dette, at aktien skal have observerede afkast i mindst
 \[
 \lceil 0.95 \cdot 120 \rceil = 114
 \]
-måneder for at blive indkluderet i universet. Aktiver med for kort eller for ujævn historik udelades dermed allerede inden estimeringen af kovarians- og korrelationsmatricerne.
+måneder for at blive inkluderet i universet. Aktiver med for kort eller for ujævn historik udelades dermed allerede inden estimeringen af kovarians- og korrelationsmatricerne.
 
 Når aktierne opfylder kravet, estimeres kovarians- og korrelationsmatricerne på baggrund af de tilgængelige observationer i det valgte estimationsvindue uden yderligere sletning af hele måneder. Det indebærer, at de enkelte kovarians- og korrelationselementer kan være estimeret på forskellige underliggende overlap mellem aktiverne. 
 
@@ -28,73 +28,73 @@ Disse datakrav indebærer en klar afvejning. På den ene side forbedrer de konsi
 
 
 
-\subsection{Walk forward analyse}
+\subsection{Walk-forward-analyse}
 
-Vi vælger at bruge en Walk Forward analyse da den betragtes som Gold Standard indenfor test af finansielle handelsstrategier. Analysen er valgt for at sikre en konsistent testmetode for kunne vurdere de forskellige porteføljers præstation indenfor forskellige testmål. En Walk Forward analyse består af en in-sample test og en out-of-sample test. Hovedmålet er have en trænings/dataperiode at træne modellen på i in-sample perioden og en test periode som er out-sample for at kunne måle præstationen uden nogen Look Ahead Bias. Dette sikrer at der ikke er noget overlap mellem perioderne der fører til integritet at vores test. 
-I in-sample perioden estimeres korrelationstrukturerne på baggrund af 120 måneders datapunkter til implementering i de udvalgte metoder. I out-of-sample perioden bruges en månedsdata til at vurdere. Walk forward testen kører iterativt og mellem hver iteration, forskydes in-sample og out-of-sample perioden med en måned. Den valgte metode kaldes backtesting indenfor Walk forward analyser
+Vi anvender en walk-forward-analyse, da den betragtes som en gold standard ved test af finansielle handelsstrategier. Metoden er valgt for at sikre en konsistent testprocedure, så de forskellige porteføljers præstation kan vurderes på tværs af flere evalueringsmål. En walk-forward-analyse består af en in-sample-periode og en out-of-sample-periode. Formålet er at estimere modellen på baggrund af træningsdata i in-sample-perioden og derefter evaluere den på en efterfølgende testperiode uden look-ahead bias. Det sikrer, at der ikke er overlap mellem perioderne, som kan kompromittere testens integritet.
+I in-sample-perioden estimeres korrelationsstrukturerne på baggrund af 120 måneders data og anvendes derefter i de valgte metoder. I out-of-sample-perioden bruges den efterfølgende måned til at vurdere porteføljernes præstation. Walk-forward-testen kører iterativt, og mellem hver iteration forskydes både in-sample- og out-of-sample-perioden med én måned. I denne sammenhæng fungerer metoden som en backtest inden for rammen af en walk-forward-analyse.
 
 \begin{figure}
     \centering
     \includegraphics[width=1\linewidth]{Data og implementering/walk_forward_120m.png}
-    \caption{Walk forward backtest}
-    \label{fig:Walk forward}
+    \caption{Walk-forward-backtest}
+    \label{fig:walk-forward}
 \end{figure}
 
-\subsection{Estimation af kovarians- og korrelationsmatricer}
-Vi bruger python pakken Pandas til at estimere kovariansen mellem aktiv i og j. Det estimeres på baggrund af de måneder hvor begge aktiver har observeret data, istedet for alle måneder. Dermed kan kan den estimerede kovarians mellem aktiv i og j være baseret på andre måneder end j og k. Det har som konsekvens at det kan skabe mere numerisk ustabilitet, dog sikrer det flere observationsdatapunkter for det samlede estimat. 
+\subsection{Estimering af kovarians- og korrelationsmatricer}
+Vi bruger Python-pakken pandas til at estimere kovariansen mellem aktiv $i$ og $j$. Estimatet beregnes på baggrund af de måneder, hvor begge aktiver har observerede data, i stedet for over alle måneder. Dermed kan den estimerede kovarians mellem aktiv $i$ og $j$ være baseret på andre måneder end kovariansen mellem $j$ og $k$. Det kan medføre større numerisk ustabilitet, men sikrer samtidig flere observationer til det samlede estimat.
 
-Pandas beregner stikprøveestimatoren mellem aktiv i og j 
+Pandas beregner stikprøveestimatoren for kovariansen mellem aktiv $i$ og $j$ som
 \begin{equation}
     \hat{\sigma}_{ij} = \frac{1}{T_{ij} - 1} \sum_{t \in T_{ij}} \left( r_{i,t} - \bar{r}_i \right) \left( r_{j,t} - \bar{r}_j \right)
-    \label{eq:placeholder_label}
+    \label{eq:sample_covariance}
 \end{equation}
-Hvor $T_{i,j}$ er datapunkter begget aktiver har data. Gennemsnittene $\bar{r}_{i,j}$ beregnes også kun over $T_{i,j}$. Nævneren $T_{i,j}-1$ er Bessels korrektion der sikrer en unbiased estimator $\mathbb{E}[\hat{\sigma}^2] = \sigma^2$.\cite{noauthor_pandasdataframecov_nodate}
+Hvor $T_{ij}$ er de tidspunkter, hvor begge aktiver har observerede data. Gennemsnittene $\bar{r}_i$ og $\bar{r}_j$ beregnes også kun over disse observationer. Nævneren $T_{ij}-1$ udgør Bessels korrektion, som sikrer en unbiased estimator, så $\mathbb{E}[\hat{\sigma}_{ij}] = \sigma_{ij}$.\cite{noauthor_pandasdataframecov_nodate}
 
-Korrelationen mellem aktiver bliver estimeret med
+Korrelationen mellem aktiverne estimeres som
 \begin{equation}
     \hat{\rho}_{ij} = \frac{\hat{\sigma}_{ij}}{\hat{\sigma}_i \cdot \hat{\sigma}_j}
-    \label{eq:placeholder_label}
+    \label{eq:sample_correlation}
 \end{equation} 
-Hvor samme antagelser med estimationsmåneder gælder, samt $\hat{\sigma}_i=\sqrt{\hat{\sigma}_{i,i}}$
+Her gælder de samme antagelser om estimationsmåneder, og $\hat{\sigma}_i = \sqrt{\hat{\sigma}_{i,i}}$.
 
 \subsubsection{Konditionstal}
-Konditionstallet bliver brugt som en diagnotiseringskilde i programmet. Numpy pakken bruges for at beregne den konsistent, hvor den er defineret som:
+Konditionstallet bruges som en diagnostisk størrelse i programmet. NumPy-pakken anvendes til at beregne det, og det er defineret som:
 \begin{equation}
     \kappa(\Sigma) = \frac{\lambda_{\max}}{\lambda_{\min}}
-    \label{eq:placeholder_label}
+    \label{eq:condition_number}
 \end{equation}
-Hvor $\lambda_{\max,\min}$ er de største og mindske egenværdier for stikprøvekovariansmatricen.
+Hvor $\lambda_{\max}$ og $\lambda_{\min}$ er de største og mindste egenværdier for stikprøvekovariansmatricen.
 
 
 
 \subsection{Implementering af klassiske porteføljeoptimeringsmetoder}
 
-I Equal Weight metoden bruges Numpy pakken igen ved for at finde vægtene
+I Equal Weight-metoden anvendes NumPy igen til at fastsætte vægtene som
 
 \begin{equation}
-    w=1/N
-    \label{eq:placeholder_label}
+    w = 1/N
+    \label{eq:equal_weight}
 \end{equation}
 
 
 \subsubsection{Klassisk Minimum Varians}
 
-Den lukkede løsning i ligning for Minimum Varians kræver beregning af $\Sigma^{-1}\mathbf{1}$. I implementeringen foretages dette ikke ved eksplicit matrixinversion, men ved at løse det lineære system $\Sigma z = \mathbf{1}$ med en direkte numerisk metode baseret på LU-dekomposition. Denne fremgangsmåde reducerer akkumuleringen af afrundingsfejl, da kun den relevante højreside løses for. Den resulterende vektor normaliseres herefter som $w = z / \sum_i z_i$.
+Den lukkede løsning i ligningen for minimum varians kræver beregning af $\Sigma^{-1}\mathbf{1}$. I implementeringen foretages dette ikke ved eksplicit matrixinversion, men ved at løse det lineære system $\Sigma z = \mathbf{1}$ med en direkte numerisk metode baseret på LU-dekomposition. Denne fremgangsmåde reducerer akkumuleringen af afrundingsfejl, da kun den relevante højreside løses. Den resulterende vektor normaliseres herefter som $w = z / \sum_i z_i$.
 
 Forud for løsningen verificeres det, at kovariansmatricen har fuld rang. Hvis rangen er lavere end $N$, returnerer metoden ingen løsning.
 
 \subsection{Implementering af HRP}
 
 
-HRP implementeres direkte på baggrund af den estimerede kovarians- og korrelationsmatrice ved brug af funktioner fra Scipy pakken. Der bruges optimal ordering\cite{noauthor_optimal_leaf_ordering_nodate} der løser et optimeringsproblem der samler de forskellige klynger i korrelationsmatricen. Dette har ikke nogen impact på selve metoden, kun på visualiseringer af korrelationmatricer
+HRP implementeres direkte på baggrund af den estimerede kovarians- og korrelationsmatrice ved hjælp af funktioner fra SciPy-pakken. Der anvendes \textit{optimal ordering}\cite{noauthor_optimal_leaf_ordering_nodate}, som løser et optimeringsproblem med henblik på at placere nært beslægtede klynger tættere på hinanden i den reordnede korrelationsmatrice. Dette ændrer ikke selve metoden, men forbedrer visualiseringen af korrelationsmatricer.
 
 \subsubsection*{Pseudokode for HRP}
 
 \begin{verbatim}
-Input: Kovariansmatrix Σ, korrelationsmatrix ρ
+Input: Kovariansmatrix Sigma, korrelationsmatrix rho
 
 1. Beregn afstandsmatrix:
-   D_ij = sqrt(0.5 * (1 - ρ_ij))
+   D_ij = sqrt(0.5 * (1 - rho_ij))
 
 2. Hierarkisk clustering:
    L = linkage(D, method = "single", optimal_ordering = True)
@@ -110,14 +110,14 @@ Input: Kovariansmatrix Σ, korrelationsmatrix ρ
        split indices i venstre og højre klynge
 
        beregn varians:
-           σ_left  = cluster_variance(Σ, left)
-           σ_right = cluster_variance(Σ, right)
+           sigma_left  = cluster_variance(Sigma, left)
+           sigma_right = cluster_variance(Sigma, right)
 
        alloker vægt:
-           α = 1 - σ_left / (σ_left + σ_right)
+           alpha = 1 - sigma_left / (sigma_left + sigma_right)
 
-       w_left  = HRP_weights(left)  * α
-       w_right = HRP_weights(right) * (1 - α)
+       w_left  = HRP_weights(left)  * alpha
+       w_right = HRP_weights(right) * (1 - alpha)
 
        return kombinerede vægte
 
@@ -132,9 +132,9 @@ Output: Porteføljevægte w
 
 \subsection{Evalueringsmål}
 
-For at kunne evaluere samt sammenligne forskellige porteføljeoptimeringsmetoder er det metodisk vigtigt at indføre forskellige typer af afkastmål. Det er kritisk, da byggestenene for metoderne er meget forskellige, og derfor vil vi også kunne forstå metoderne intuitivt og empirisk finde ud af hvordan deres resultater afspejler sig fra hinanden. Vi har valgt følgende mål der sikrer en gennemgående og fyldestgørende vurdering.
+For at kunne evaluere og sammenligne forskellige porteføljeoptimeringsmetoder er det metodisk vigtigt at anvende flere evalueringsmål. Det er nødvendigt, fordi metoderne bygger på forskellige principper, og fordi en bredere evaluering gør det lettere både intuitivt og empirisk at forstå, hvordan deres resultater adskiller sig fra hinanden. Vi har derfor valgt en række mål, som tilsammen giver en gennemgående og fyldestgørende vurdering.
 
-Afkast, volatilitet og Sharpe ratio måles alle på baggrund af out-of-sample backtesting perioderne. 
+Afkast, volatilitet og Sharpe-ratio måles alle på baggrund af out-of-sample-perioderne i backtesten.
 
 \subsubsection{Afkast}
 
@@ -161,10 +161,10 @@ Det annualiserede afkast beregnes herefter geometrisk på baggrund af det kumula
 \label{eq:annualized_return}
 \end{equation}
 
-Den geometriske annualisering er valgt, fordi den tager højde for renters rente effekten og derfor giver et mere retvisende mål for den langsigtede præstation. Dette er særligt relevant i en backtest, hvor porteføljeværdien udvikler sig multiplikativt over tid.
+Den geometriske annualisering er valgt, fordi den tager højde for renters rente-effekten og derfor giver et mere retvisende mål for den langsigtede præstation. Dette er særligt relevant i en backtest, hvor porteføljeværdien udvikler sig multiplikativt over tid.
 
 \subsubsection{Volatilitet}
-Porteføljernes realiserede risiko måles ved den annualiserede volatilitet, defineret som standardafvigelsen på de out-of-sample perioders afkast skaleret til et årligt niveau. Konkret beregnes den annualiserede volatilitet som
+Porteføljernes realiserede risiko måles ved den annualiserede volatilitet, defineret som standardafvigelsen på de out-of-sample-perioders afkast skaleret til et årligt niveau. Konkret beregnes den annualiserede volatilitet som
 \begin{equation}
 \sigma_p^{\mathrm{ann}}
 =
@@ -183,25 +183,24 @@ hvor
 \frac{1}{T}\sum_{t=1}^{T} r_{p,t}.
 \label{eq:mean_return}
 \end{equation}
-hvor $\hat{\sigma}$ betegner stikprøvestandardafvigelsen af de $T$ månedlige porteføljeafkast og faktoren \sqrt{12}afspejler antagelsen om uafhængige og identisk fordelte månedlige afkast. Stikprøvestandardafvigelsen beregnes med $T−1$ frihedsgrader i nævneren der svarer til Bessels korrektion.
+Her er $\bar r_p$ det gennemsnitlige månedlige porteføljeafkast. Faktoren $\sqrt{12}$ afspejler antagelsen om uafhængige og identisk fordelte månedlige afkast, og stikprøvestandardafvigelsen beregnes med $T-1$ frihedsgrader i nævneren svarende til Bessels korrektion.
 
-\subsubsection{Sharpe Ratio}
-Afkast alene er ikke tilstrækkeligt til at vurdere kvaliteten af en porteføljestrategi, da højt afkast kan være opnået ved at påtage sig betydelig risiko. Derfor suppleres afkastmålet med Sharpe Ratio, som måler porteføljens risikojusterede afkast.
+\subsubsection{Sharpe-ratio}
+Afkast alene er ikke tilstrækkeligt til at vurdere kvaliteten af en porteføljestrategi, da et højt afkast kan være opnået ved at påtage sig betydelig risiko. Derfor suppleres afkastmålet med Sharpe-ratioen, som måler porteføljens risikojusterede afkast.
 \begin{equation}
 \mathrm{SR}_{p}
 =
 \frac{\bar{r}_{p}^{\mathrm{ann}}}{\sigma_{p}^{\mathrm{ann}}}.
 \label{eq:sharpe_ratio_rf_zero}
 \end{equation}
+hvor $\bar{r}_{p}^{\mathrm{ann}}$ er porteføljens annualiserede afkast, og $\sigma_{p}^{\mathrm{ann}}$ er den annualiserede volatilitet.
 
-hvor $\bar{r}_{p}^{\mathrm{ann}}$ er porteføljens annualiserede afkast og $\sigma_{p}^{\mathrm{ann}}$ er den annualiserede volatilitet.
-
-Dermed måler Sharpe Ratio i praksis, hvor meget annualiseret afkast porteføljen genererer pr. enhed annualiseret risiko. En højere Sharpe Ratio indikerer dermed en mere attraktiv balance mellem afkast og risiko.
+Sharpe-ratioen måler dermed i praksis, hvor meget annualiseret afkast porteføljen genererer pr. enhed annualiseret risiko. En højere Sharpe-ratio indikerer derfor en mere attraktiv balance mellem afkast og risiko.
 
 
 \subsubsection{Turnover}
 
-Turnover anvendes som mål for, hvor meget porteføljen skal omlægges mellem rebalanceringstidspunkterne. I hver periode sammenlignes de nye porteføljevægte med de gamle vægte der er justerede med afkast fra den foregående periode, dvs. de vægte der opstår, når de tidligere porteføljevægte justeres med de realiserede aktivafkast. For aktiv $i$ beregnes den vægten før rebalancering i periode $t+1$ som
+Turnover anvendes som mål for, hvor meget porteføljen skal omlægges mellem rebalanceringstidspunkterne. I hver periode sammenlignes de nye porteføljevægte med de gamle vægte, justeret med afkast fra den foregående periode, dvs. de vægte der opstår, når de tidligere porteføljevægte opdateres med de realiserede aktivafkast. For aktiv $i$ beregnes vægten før rebalancering i periode $t+1$ som
 \begin{equation}
 \tilde{w}_{i,t+1}
 =
@@ -222,19 +221,19 @@ Den gennemsnitlige turnover i out-of-sample perioden beregnes herefter som
 \right|,
 \label{eq:turnover}
 \end{equation}
-hvor $w_{i,t+1}$ er den nye ønskede porteføljevægt efter rebalancering. $T$ er antallet out-of-sample perioder. Turnover måler således den gennemsnitlige andel af porteføljen, der handles ved hver rebalancering i backtesten.\cite{demiguel_improving_2007}
+hvor $w_{i,t+1}$ er den nye ønskede porteføljevægt efter rebalancering. $T$ er antallet af out-of-sample-perioder. Turnover måler således den gennemsnitlige andel af porteføljen, der handles ved hver rebalancering i backtesten.\cite{demiguel_improving_2007}
 
 
 
 
-\subsubsection{Sum of squared porteføljevægte}
+\subsubsection{Summen af kvadrerede porteføljevægte}
 
-SSPW bruges til at afgøre hvor diversificerede porteføljerne er.
+SSPW bruges som mål for, hvor diversificerede porteføljerne er. Lad $w_i$ være porteføljevægten på aktiv $i$, og lad $N$ være antallet af aktiver i porteføljen. For en fuldt investeret portefølje, hvor vægtene summerer til $1$, er den gennemsnitlige vægt givet ved $\bar{w}=1/N$. SSPW kan derfor skrives som
 \begin{equation}
-    SSPW = \sum_{i=1}^{N} (w_i - w_m)^2 = \sum_{i=1}^{N} \left( w_i - \frac{1}{N_m} \right)^2 \approx \sum_{i=1}^{N} w_i^2,
-    \label{eq:placeholder_label}
+    SSPW = \sum_{i=1}^{N} (w_i - \bar{w})^2 = \sum_{i=1}^{N} \left( w_i - \frac{1}{N} \right)^2,
+    \label{eq:sspw}
 \end{equation}
-Hvor N er antal perioder. Et lavere SSPW er altså en mere diversificeret portefølje.
+Som koncentrationsmål er SSPW tæt knyttet til summen af de kvadrerede vægte, $\sum_{i=1}^{N} w_i^2$, og et lavere SSPW svarer dermed til en mere diversificeret portefølje.
 \cite{goetzmann_equity_nodate}
 
 
