@@ -65,6 +65,8 @@ Konditionstallet bliver brugt som en diagnotiseringskilde i programmet. Numpy pa
 \end{equation}
 Hvor $\lambda_{\max,\min}$ er de største og mindske egenværdier for stikprøvekovariansmatricen.
 
+
+
 \subsection{Implementering af klassiske porteføljeoptimeringsmetoder}
 
 I Equal Weight metoden bruges Numpy pakken igen ved for at finde vægtene
@@ -83,12 +85,157 @@ Forud for løsningen verificeres det, at kovariansmatricen har fuld rang. Hvis r
 
 \subsection{Implementering af HRP}
 
+
+HRP implementeres direkte på baggrund af den estimerede kovarians- og korrelationsmatrice ved brug af funktioner fra Scipy pakken. Der bruges optimal ordering\cite{noauthor_optimal_leaf_ordering_nodate} der løser et optimeringsproblem der samler de forskellige klynger i korrelationsmatricen. Dette har ikke nogen impact på selve metoden, kun på visualiseringer af korrelationmatricer
+
+\subsubsection*{Pseudokode for HRP}
+
+\begin{verbatim}
+Input: Kovariansmatrix Σ, korrelationsmatrix ρ
+
+1. Beregn afstandsmatrix:
+   D_ij = sqrt(0.5 * (1 - ρ_ij))
+
+2. Hierarkisk clustering:
+   L = linkage(D, method = "single", optimal_ordering = True)
+
+3. Find sorteringsrækkefølge:
+   sorted_idx = quasi_diagonal(L)
+
+4. Rekursiv vægtallokering:
+   function HRP_weights(indices):
+       if length(indices) == 1:
+           return weight = 1
+
+       split indices i venstre og højre klynge
+
+       beregn varians:
+           σ_left  = cluster_variance(Σ, left)
+           σ_right = cluster_variance(Σ, right)
+
+       alloker vægt:
+           α = 1 - σ_left / (σ_left + σ_right)
+
+       w_left  = HRP_weights(left)  * α
+       w_right = HRP_weights(right) * (1 - α)
+
+       return kombinerede vægte
+
+5. Normaliser vægte:
+   w = w / sum(w)
+
+Output: Porteføljevægte w
+\end{verbatim}
+
+
+
+
 \subsection{Evalueringsmål}
+
+For at kunne evaluere samt sammenligne forskellige porteføljeoptimeringsmetoder er det metodisk vigtigt at indføre forskellige typer af afkastmål. Det er kritisk, da byggestenene for metoderne er meget forskellige, og derfor vil vi også kunne forstå metoderne intuitivt og empirisk finde ud af hvordan deres resultater afspejler sig fra hinanden. Vi har valgt følgende mål der sikrer en gennemgående og fyldestgørende vurdering.
+
+Afkast, volatilitet og Sharpe ratio måles alle på baggrund af out-of-sample backtesting perioderne. 
+
 \subsubsection{Afkast}
+
+Afkast er det mest direkte mål for, hvordan de forskellige porteføljeallokeringsmetoder præsterer i backtesten. Da porteføljerne rebalanceres månedligt og evalueres på baggrund af out-of-sample månedsafkast, tager analysen udgangspunkt i den realiserede afkastrække for hver metode. For en given portefølje $p$ betegnes det realiserede afkast i måned $t$ som $r_{p,t}$.
+
+For at sammenligne porteføljer over hele backtestperioden anvendes både kumulativt afkast og annualiseret afkast. Det kumulative afkast viser den samlede formueudvikling gennem hele testperioden og beregnes som
+\begin{equation}
+R_{p}^{\mathrm{kum}}
+=
+\prod_{t=1}^{T}(1+r_{p,t}) - 1,
+\label{eq:cumulative_return}
+\end{equation}
+hvor $T$ er antallet af out-of-sample måneder.
+
+Det annualiserede afkast beregnes herefter geometrisk på baggrund af det kumulative afkast:
+\begin{equation}
+\bar{r}_{p}^{\mathrm{ann}}
+=
+\left(1 + R_{p}^{\mathrm{kum}}\right)^{12/T} - 1
+=
+\left(
+\prod_{t=1}^{T}(1+r_{p,t})
+\right)^{12/T} - 1.
+\label{eq:annualized_return}
+\end{equation}
+
+Den geometriske annualisering er valgt, fordi den tager højde for renters rente effekten og derfor giver et mere retvisende mål for den langsigtede præstation. Dette er særligt relevant i en backtest, hvor porteføljeværdien udvikler sig multiplikativt over tid.
+
 \subsubsection{Volatilitet}
+Porteføljernes realiserede risiko måles ved den annualiserede volatilitet, defineret som standardafvigelsen på de out-of-sample perioders afkast skaleret til et årligt niveau. Konkret beregnes den annualiserede volatilitet som
+\begin{equation}
+\sigma_p^{\mathrm{ann}}
+=
+\sqrt{12}\,
+\sqrt{
+\frac{1}{T-1}
+\sum_{t=1}^{T}
+\left(r_{p,t}-\bar r_p\right)^2
+},
+\label{eq:vol}
+\end{equation}
+hvor
+\begin{equation}
+\bar r_p
+=
+\frac{1}{T}\sum_{t=1}^{T} r_{p,t}.
+\label{eq:mean_return}
+\end{equation}
+hvor $\hat{\sigma}$ betegner stikprøvestandardafvigelsen af de $T$ månedlige porteføljeafkast og faktoren \sqrt{12}afspejler antagelsen om uafhængige og identisk fordelte månedlige afkast. Stikprøvestandardafvigelsen beregnes med $T−1$ frihedsgrader i nævneren der svarer til Bessels korrektion.
+
 \subsubsection{Sharpe Ratio}
-\subsubsection{Turn over}
-\subsubsection{Risikoallokering}
+Afkast alene er ikke tilstrækkeligt til at vurdere kvaliteten af en porteføljestrategi, da højt afkast kan være opnået ved at påtage sig betydelig risiko. Derfor suppleres afkastmålet med Sharpe Ratio, som måler porteføljens risikojusterede afkast.
+\begin{equation}
+\mathrm{SR}_{p}
+=
+\frac{\bar{r}_{p}^{\mathrm{ann}}}{\sigma_{p}^{\mathrm{ann}}}.
+\label{eq:sharpe_ratio_rf_zero}
+\end{equation}
+
+hvor $\bar{r}_{p}^{\mathrm{ann}}$ er porteføljens annualiserede afkast og $\sigma_{p}^{\mathrm{ann}}$ er den annualiserede volatilitet.
+
+Dermed måler Sharpe Ratio i praksis, hvor meget annualiseret afkast porteføljen genererer pr. enhed annualiseret risiko. En højere Sharpe Ratio indikerer dermed en mere attraktiv balance mellem afkast og risiko.
+
+
+\subsubsection{Turnover}
+
+Turnover anvendes som mål for, hvor meget porteføljen skal omlægges mellem rebalanceringstidspunkterne. I hver periode sammenlignes de nye porteføljevægte med de gamle vægte der er justerede med afkast fra den foregående periode, dvs. de vægte der opstår, når de tidligere porteføljevægte justeres med de realiserede aktivafkast. For aktiv $i$ beregnes den vægten før rebalancering i periode $t+1$ som
+\begin{equation}
+\tilde{w}_{i,t+1}
+=
+\frac{w_{i,t}(1+R_{i,t+1})}{1+R_{p,t+1}},
+\label{eq:drifted_weight}
+\end{equation}
+hvor $w_{i,t}$ er porteføljevægten i periode $t$, $R_{i,t+1}$ er aktivets realiserede afkast, og $R_{p,t+1}$ er porteføljens samlede afkast i perioden.
+
+Den gennemsnitlige turnover i out-of-sample perioden beregnes herefter som
+\begin{equation}
+\mathrm{Turnover}
+=
+\frac{1}{T-1}
+\sum_{t=1}^{T-1}
+\sum_{i=1}^{N}
+\left|
+\tilde{w}_{i,t+1} - w_{i,t+1}
+\right|,
+\label{eq:turnover}
+\end{equation}
+hvor $w_{i,t+1}$ er den nye ønskede porteføljevægt efter rebalancering. $T$ er antallet out-of-sample perioder. Turnover måler således den gennemsnitlige andel af porteføljen, der handles ved hver rebalancering i backtesten.\cite{demiguel_improving_2007}
+
+
+
+
+\subsubsection{Sum of squared porteføljevægte}
+
+SSPW bruges til at afgøre hvor diversificerede porteføljerne er.
+\begin{equation}
+    SSPW = \sum_{i=1}^{N} (w_i - w_m)^2 = \sum_{i=1}^{N} \left( w_i - \frac{1}{N_m} \right)^2 \approx \sum_{i=1}^{N} w_i^2,
+    \label{eq:placeholder_label}
+\end{equation}
+Hvor N er antal perioder. Et lavere SSPW er altså en mere diversificeret portefølje.
+\cite{goetzmann_equity_nodate}
 
 
 

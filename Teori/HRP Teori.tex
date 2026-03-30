@@ -56,5 +56,52 @@ Man gentager nu processen indtil alle observationer er samlet i en klynge.
 
 \subsubsection{Klyngeafstandsmål}
 
+Som udgangspunkt benytter HRP single linkage som linkage-kriterium.~\cite{kaae_karppinen_hierarchical_2022} Dette bekræftes i officiel R-dokumentation for HRP-porteføljer, hvor ``single'' er default linkage i en HRP-funktion.~\cite{trucios_hrp_portfolio_nodate} Vi vælger derfor at anvende denne i vores program. Det er dog vigtigt at vi ved hvilke konsekvenser dette valg giver:
 
+\paragraph{Seriation/quasi-diagonalization.}
+Seriation bygger på linkage-matricen og ordner aktiver så ``nære'' punkter kommer tæt i den permuterede kovarians-/korrelationsmatrix.~\cite{kaae_karppinen_hierarchical_2022} Hvis single linkage skaber chaining, kan ordenen blive mere ``kædeagtig'' med store, ujævne grene. Det kan give en quasi-diagonaliseret matrix med lange, smalle blokke frem for mere kompakte blokke, og dermed ændre hvilke delmængder, der ``konkurrerer'' i recursive bisection.
+
+\paragraph{Recursive bisection.}
+I den naive bisection, splittes en ordnet aktivliste i to lige store dele, og kapital fordeles via $\alpha$ baseret på de to delklyngers estimerede varianser.~\cite{kaae_karppinen_hierarchical_2022} Hvis linkage-valget ændrer ordenen, ændres også hvilke aktiver der havner i samme delmængde ved tidlige splits. Dermed kan linkage-valget i praksis ændre porteføljens risikobudgettering, selv om risikomålet i bisection-trinnet er det samme.
+
+\subsection{Executive summary}
+
+Hierarchical Risk Parity (HRP) er en heuristisk porteføljeallokeringsmetode, der kombinerer hierarkisk clustering og risikobudgettering for at konstruere diversificerede vægte uden at løse et klassisk kvadratisk optimeringsproblem. Den centrale idé er at udlede en hierarkisk træstruktur over aktiver ud fra en afstand (typisk afledt af korrelation), omordne kovariansmatricen (quasi-diagonalization/seriation) efter træets bladorden og derefter allokere vægte via en rekursiv top-down bisection, hvor kapital fordeles mellem delklynger proportionalt med (inverse) estimeret risiko.~\cite{lopez_de_prado_building_2016,kaae_karppinen_hierarchical_2022}
+
+Dette teoriafsnit fremhæver, at HRP's praktiske egenskaber i høj grad bestemmes af to designvalg i ``clustering-leddet'': (i) afstandsmål (hvordan ``kodependens'' mellem aktiver omsættes til en metrik/dissimilaritet) og (ii) linkage-kriterium (hvordan afstand mellem klynger beregnes). Standard HRP anvender en korrelationsbaseret afstandstransformation $d_{ij}=\sqrt{\frac{1}{2}(1-\rho_{ij})}$ og single linkage som standard-linkage, men både afstand og linkage varierer på tværs af implementeringer og kan ændre træets struktur, quasi-diagonalization og dermed risikofordelingen i de endelige vægte.~\cite{lopez_de_prado_building_2016,trucios_hrp_portfolio_nodate,kaae_karppinen_hierarchical_2022}
+
+En standardiseret HRP-pipeline kan beskrives i tre trin:
+\begin{enumerate}
+    \item Tree clustering: Estimér en korrelationsmatrix $\rho=\{\rho_{ij}\}$ fra afkastdata og konstruér en afstandsmatrix $D=\{d_{ij}\}$ via en transformation, så afstand opfylder metriske krav. I HRP-litteraturen fremhæves eksplicit, at korrelation i sig selv ikke er en afstandsmetrik, og at der derfor anvendes en transformation for at opnå symmetri, ikke-negativitet, identitet og trekantsulighed.~\cite{lopez_de_prado_building_2016,kaae_karppinen_hierarchical_2022}
+    \item Quasi-diagonalization (seriation): Omordn kovarians-/korrelationsmatricen, så ``lignende'' aktiver (ifølge træet) placeres tæt, og store kovarianser koncentreres langs diagonalen. Dette er ikke en basis-transformation, men en permutation af rækker/kolonner styret af linkage-matricen fra clustering-trinnet.~\cite{kaae_karppinen_hierarchical_2022}
+    \item Recursive bisection: Allokér vægte top-down ved gentagne splits af den ordnede aktivliste. Variansen af en delklynge estimeres med inverse-variance-vægte, og kapital fordeles mellem to subklynger ved en split-faktor $\alpha$, så den mere risikofyldte subklynge skaleres ned.~\cite{kaae_karppinen_hierarchical_2022}
+\end{enumerate}
+
+Matematisk fremgår disse trin tydeligt i standardiserede fremstillinger: Efter seriation beregnes fx delklyngevarians som
+\[
+    \operatorname{Var}(L_i^{(j)})=(w_i^{(j)})^\top \Sigma_i^S w_i^{(j)},
+\]
+hvor $w_i^{(j)}$ er inverse-variance-vægte inden for delklyngen,
+\[
+    w_i^{(j)}=\operatorname{diag}(\Sigma_i^S)^{-1}/\operatorname{tr}(\operatorname{diag}(\Sigma_i^S)^{-1}).
+\]
+Split-faktoren kan for to delklynger skrives som
+\[
+    \alpha_1=1-\frac{\operatorname{Var}(L_i^{(1)})}{\operatorname{Var}(L_i^{(1)})+\operatorname{Var}(L_i^{(2)})}
+    \qquad \text{og} \qquad
+    \alpha_2=1-\alpha_1,
+\]
+hvorefter vægtene reskaleres rekursivt.~\cite{kaae_karppinen_hierarchical_2022}
+
+HRP's praktiske robusthedsmotivation formuleres ofte som et alternativ til metoder, der kræver (stabil) inversion af kovariansmatricen; i proxy-afhandlingen fremhæves, at HRP ikke kræver kovariansmatricen positiv definit.~\cite{kaae_karppinen_hierarchical_2022} Samtidig bemærkes det i en anden proxy-afhandling, at sample-estimater af afkast og kovarians kan have store estimeringsfejl, og at risk-baserede metoder (inkl. HRP) søger at reducere fejlens effekt.~\cite{jensen_brix_modern_2023}
+
+\subsubsection{Alternative HRP-implementeringer}
+
+I nyere HRP-implementeringer andvendes ofte flere korrelations-valg end Pearson. F.eks. dokumenterer en udbredt porteføljeoptimeringspakke afstandsformler for Spearman, Kendall, absolut korrelation, distance korrelation, gensidig information og hale afhængighed.~\cite{cajas_hcportfolio_nodate} Det ville betyde at rank-korrelationer (Spearman/Kendall) kan gøre træet mindre følsomt over for ekstreme observationer og ikke-normalitet i afkast, hvilket øger robustheden.
+
+\begin{itemize}
+    \item Tail dependence kan skabe klynger drevet af fælles downside-episoder snarere end gennemsnitskorrelation, hvilket kan ændre risikobudgettering i recursive bisection mod klyngevis ``kriserisiko''.~\cite{cajas_hcportfolio_nodate}
+    \item Mutual information / distance correlation kan (i princippet) fange ikke-lineær afhængighed, men typisk med højere estimationsusikkerhed og beregningsomkostninger; i HRP kan det give mere kompleks, men potentielt mindre stabil, træstruktur.~\cite{cajas_hcportfolio_nodate}
+\end{itemize}
+\subsubsection{Hvilket linkage bruger standard HRP, og hvad betyder det for seriation og bisection?}
 \end{document}
