@@ -7,9 +7,9 @@
 
 \subsection{Hierakisk clustering i HRP}
 
-Rå data kan ofte være uoverskuelige og vanskelige at arbejde med. Uden en systematisk metode til at organisere data før videre analyse, kan man risikere at overse mønstre eller strukturer, som kan være væsentlige for analysen og den efterfølgende fortolkning. Klyngedannelse, også kaldet clustering, er en metode, der adresserer dette problem. Ved at organisere og opdele data i grupper baseret på ligheder mellem observationer kan man opnå en dybere forståelse af datastrukturen. Hermed, gør klyngedannelse det muligt at identificere systematiske sammenhænge i data, som ellers kan være svære at opdage.
+Råt data kan ofte være uoverskueligt og vanskeligt at arbejde med. Uden en systematisk metode til at organisere data før videre analyse, kan man risikere at overse mønstre eller strukturer, som kan være væsentlige for analysen og den efterfølgende fortolkning. Klyngedannelse, på engelsk kaldet clustering, er en metode, der adresserer dette problem. Ved at organisere og opdele data i grupper baseret på ligheder mellem observationer kan man opnå en dybere forståelse af datastrukturen. Hermed gør klyngedannelse det muligt at identificere systematiske sammenhænge i data, som ellers kan være svære at opdage.
 
-Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber.~\cite{conradsen_clusteranalyse_2023} I Porteføljeteori er ``objekterne'' typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor Jain (2010) opdeler disse metoder ind i to grupper: partitionale og hierarkiske.~\cite{jain_data_clustering_2010}
+Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber.~\cite{conradsen_clusteranalyse_2023} I Porteføljeteori er ``objekterne'' typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor Jain (2010) opdeler disse metoder i to grupper: partitionelle og hierarkiske.~\cite{jain_data_clustering_2010}
 
 \begin{figure}[H]
     \centering
@@ -18,9 +18,9 @@ Clustering kan meget kort defineres som forskellige metoder til at gruppere obje
     \label{fig:hvc}
 \end{figure}
 
-Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et samlet antal klynger (K). Formålet er at minimere den samlede variation inden for klyngerne, hvor de bliver grupperet ud fra distancen af en ``centroid''. En centroid er midterpunktet af hver klynge, hvor denne iterativt flyttes ud fra antal datapunkter der er i hver klynge. Denne type metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dermed bliver partitionale metoder ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning.
+Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et på forhånd fastlagt antal klynger, K. Formålet er at minimere den samlede variation inden for klyngerne, idet de bliver grupperet ud fra distancen til en ``centroid''. En centroid er midterpunktet af hver klynge. Den flyttes ud fra antal datapunkter der er i hver klynge. Denne type metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dermed bliver partitionelle metoder ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning.
 
-Selvom partitionale metoder ofte er mere effektive og lettere at beregne, er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsning ikke er gældende. I Hierarkisk klyngedannelse, opdeler man igen punkterne ud fra lighed. Her bliver hver iteration en ny klynge. Algoritmen køres igennem indtil alle punkter er blevet inddelt i klynger, hvor output bliver et dendrogram.
+Selvom partitionelle metoder ofte er mere effektive og lettere at beregne, er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsning ikke er gældende. I Hierarkisk klyngedannelse, opdeler man igen punkterne ud fra lighed. Her bliver hver iteration en ny klynge. Algoritmen køres igennem indtil alle punkter er blevet inddelt i klynger, hvor output bliver et dendrogram.
 
 \begin{figure}[H]
     \centering
@@ -29,7 +29,7 @@ Selvom partitionale metoder ofte er mere effektive og lettere at beregne, er det
     \label{fig:placeholder}
 \end{figure}
 
-HRP's brug af hierarkisk, frem for partitional clustering, er strukturel: HRP bruger en træstruktur (dendrogram) både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
+HRP's brug af hierarkisk, frem for partitionel clustering, skyldes den strukturelle form ved et dendrogram. HRP bruger dendrogrammet både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
 
 Der findes generelt set to typer af hierarkiske clustering-algoritmer som kan siges at være modsætninger:
 \begin{description}
@@ -134,7 +134,7 @@ Ward-linkage (minimum variance) giver typisk kompakte klynger og kan reducere ch
 
 \subsection{Quasi-diagonalisering i HRP}
 
-Efter konstruktionen af det hierarkiske dendrogram i første trin af HRP-algoritmen, udføres en quasi-diagonalisering af korrelationsmatricen. Dette er step 2. i den overordnede implementering af HRP. Formålet er at omstrukturere matricen, så aktiver med høj fælles korrelation placeres tæt på hinanden, hvilket resulterer i en blokstruktur omkring diagonalen. Denne blokstrukter giver en visuel representation af klyngerne fra dendrogrammet, i korrelationsmatricen.
+Efter konstruktionen af det hierarkiske dendrogram i første trin af HRP-algoritmen, udføres en quasi-diagonalisering af korrelationsmatricen. Dette er step 2. i den overordnede implementering af HRP. Formålet er at omstrukturere matricen, så aktiver med høj fælles korrelation placeres tæt på hinanden, hvilket resulterer i en blokstruktur omkring diagonalen. Denne blokstrukter giver en visuel representation af klyngerne fra dendrogrammet.
 
 Det originale udgangspunkt for korrelationsmatricen er gives ved: $\Sigma \in \mathbb{R}^{N \times N}$, hvor $N$ er antallet af aktiver. 
 
