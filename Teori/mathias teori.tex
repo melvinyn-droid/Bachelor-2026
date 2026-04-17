@@ -9,40 +9,44 @@
 
 Råt data kan ofte være uoverskueligt og vanskeligt at arbejde med. Uden en systematisk metode til at organisere data før videre analyse, kan man risikere at overse mønstre eller strukturer, som kan være væsentlige for analysen og den efterfølgende fortolkning. Klyngedannelse, på engelsk kaldet clustering, er en metode, der adresserer dette problem. Ved at organisere og opdele data i grupper baseret på ligheder mellem observationer kan man opnå en dybere forståelse af datastrukturen. Hermed gør klyngedannelse det muligt at identificere systematiske sammenhænge i data, som ellers kan være svære at opdage.
 
-Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber.~\cite{conradsen_clusteranalyse_2023} I Porteføljeteori er ``objekterne'' typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor Jain (2010) opdeler disse metoder i to grupper: partitionelle og hierarkiske.~\cite{jain_data_clustering_2010}
-
+Clustering kan meget kort defineres som forskellige metoder til at gruppere objekter i klynger baseret på ligheder/forskelle i målte egenskaber.~\cite{conradsen_clusteranalyse_2023} I Porteføljeteori er ``objekterne'' typisk aktiver eller faktorer, og den relevante lighed er ikke lighed i niveauer, men lighed i korrelation i afkast. Der er mange forskellige clusteringmetoder, hvor Jain (2010) opdeler disse metoder i to grupper: partitionelle og hierarkiske.~\cite{jain_data_clustering_2010} Figur 1 visualiserer denne forskel klart. Ved heirakisk klyngedannelse, er klyngerne nestede. Det vil sige at der er mindre klynger inde i større, hvor datapunkter er tildelt flere klynger. I modsætning overlapper ingen datapunkter og dermed klynge i partitionel klyngedannelse.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{HvC.png}
-    \caption{Hierakiske vs Partitional clustering}
+    \caption{På venstre side af figuren er hierakisk clustering visualiseret. Her er datasættet opdelt i flere "lag" klynger, hvor hele datasættet er en klynge som også er opdelt i 3 mindre klynger. I modsætning, ses partitionel clustering i højre side af figuren, hvor datasættet opdeles i særskilte klynger. }
     \label{fig:hvc}
 \end{figure}
 
-Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et på forhånd fastlagt antal klynger, K. Formålet er at minimere den samlede variation inden for klyngerne, idet de bliver grupperet ud fra distancen til en ``centroid''. En centroid er midterpunktet af hver klynge. Den flyttes ud fra antal datapunkter der er i hver klynge. Denne type metode er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dermed bliver partitionelle metoder ofte brugt i optimeringsproblemer hvor man har en kendt begrænsning.
+Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et antal klynger, K, som på forhånd er bestemt. Formålet er at minimere den samlede variation inden for klyngerne, idet de bliver grupperet ud fra distancen til en ``centroid'', som er midterpunktet af hver klynge. Denne flyttes ud fra antal datapunkter der er i hver klynge. Metoden er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dette gør dem særligt velegnede i situationer, hvor problemet er veldefineret, og hvor man ønsker en direkte og beregningsmæssigt effektiv opdeling af data i et givent antal grupper.
 
-Selvom partitionelle metoder ofte er mere effektive og lettere at beregne, er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsning ikke er gældende. I Hierarkisk klyngedannelse, opdeler man igen punkterne ud fra lighed. Her bliver hver iteration en ny klynge. Algoritmen køres igennem indtil alle punkter er blevet inddelt i klynger, hvor output bliver et dendrogram.
+
+Selvom partitionelle metoder ofte er mere effektive og lettere at beregne, er det ikke nødvendigvis den bedste metode at bruge i porteføljeoptimering. Som udgangspunkt kan det være svært at vide hvor mange klynger der skal dannes ud fra et stort datasæt af aktiver og dermed kan det være mere nyttigt at bruge hierarkisk klyngedannelse, hvor denne begrænsning ikke er gældende.
+
+\subsection{Dendrogram}
+Hierakisk klyngedannlesesalgoritmer danner en struktur der minder om et stamtræ. Denne træ-struktur kaldes for et dendrogram. Ideen er, at hele datasættets inddeling af klynger kan visualiseres på en let forståelig hierakisk måde. Figur 2 viser hvordan dendrogrammet er opbygget, hvor x-aksen viser antal datapunkter og y-aksen beskriver klyngeafstanden. De punkter der ligger tættest på hinanden, bliver sammensat i klynger, og er "rødderne" af træet. Herfra bliver klyngerne sat sammen en efter en, indtil de danner "stammen" af træet. Dendrogrammet visualiserer tydeligt den hierakiske rækkefølge af klyngedannelsen ud fra højden hvor klyngerne sættes sammen.  I Figur 2 ses at (E) og (F) er den første klynge der dannes, da denne sammenfatning er længst nede mod roden. Derfra bliver A og B sat sammen, efterfulgt af (D) og (E,F) og (C) og (D,E,F). Til sidst bliver klyngerne sat sammen så hele datasættet er en stor klynge. Det skal siges at selve rækkefølgen af klyngedannelsen også kan starte fra toppen med en samlet klynge hvor klyngerne derfra bliver delt op. Strukturen forbliver den samme.
+Den hierakiske rækkefølge er ikke vist på samme måde i den venstre visualisering i Figur 2. Her er kan man kun se hvordan klyngerne er nestede, men ikke rækkefølgen hvori de bliver dannet. Denne forskel er betydelig og gør dendrogrammet et vigtigt redskab til at analysere datasættet mere præcist.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{clustertodendrogram.png}
-    \caption{Visuel representation af hvordan hierakisk klyngedannelse danner dendrogrammer}
+    \caption{Visuel representation af hvordan heirakisk klyngedannelse af et datasæt former et dendrogram. I venstre side, som udelukkende visueliserer grupperingen, mister man fornemmelsen af klyngedannelsesrækkefølgen. I modsætning ses denne i dendrogrammet i højre side.}
     \label{fig:placeholder}
 \end{figure}
 
-HRP's brug af hierarkisk, frem for partitionel clustering, skyldes den strukturelle form ved et dendrogram. HRP bruger dendrogrammet både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
-
-Der findes generelt set to typer af hierarkiske clustering-algoritmer som kan siges at være modsætninger:
+\textbf{HRP's brug af hierarkisk, frem for partitionel clustering, skyldes den strukturelle form ved et dendrogram. HRP bruger dendrogrammet både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
+}
+Som beskrevet ovenfor, findes der generelt set to typer af hierarkiske clustering-algoritmer som kan siges at være modsætninger. Denne forskel er også illustreret i Figur 3:
 \begin{description}
-    \item[Agglomerativ clustering (bottom-up):] Her bliver hvert datapunkt inddelt i sin egen klynge, også kaldet en singelton-klynge. I hvert trin i algoritmen flettes de to mest lignende klynger sammen til en ny, større klynge. Hvis der er $N$ datapunkter, er der $N$ klynger i første step. Algoritmen gentages, indtil alle klynger bliver grupperet til en stor klynge.
+    \item[Agglomerativ clustering (bottom-up):] Her bliver hvert datapunkt inddelt i sin egen klynge, også kaldet en singelton-klynge. I hvert trin i algoritmen flettes de to mest lignende klynger sammen til en ny, større klynge. Det vil sige at med $N$ datapunkter, er der $N$ klynger i første step. Algoritmen gentages, indtil alle klynger bliver grupperet til én sammensat klynge.
     \item[Divisiv hierarkisk klyngedannelse (top-down):] Alle datapunkter er samlet i én stor klynge, og i hvert trin i algoritmen opdeles klyngen i to nye klynger. Algoritmen gentages, indtil alle observationer er i deres egen klynge, igen en singleton. Den divisive algoritme bliver brugt i mindre grad, da den er mere beregningstung.~\cite{soni_mastering_2023}
 \end{description}
 
-Da den agglomerative alogritme er mindre beregningstung og udelukkende bliver brugt i Marcos López de Prado's originale artikel, vælger vi kun at fokusere på denne.~\cite{lopez_de_prado_building_2016}
+Resulatet bliver, for begge algoritmer, det samme dannede dendrogram, men i modsat rækkefølge. Den agglomerative alogritme er mindre beregningstung og bliver udelukkende bliver brugt i Marcos López de Prado's originale artikel. Vi vælger derfor kun at fokusere på denne.~\cite{lopez_de_prado_building_2016}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{agglvdivis.png}
-    \caption{Agglomerativ vs Divisiv clustering}
+    \caption{Illustration af den kontrære rækkefølge hvori den agglomerative og divisive algortime danner klynger. Resultatet forbliver ens for begge algoritmer.}
     \label{fig:placeholder}
 \end{figure}
 

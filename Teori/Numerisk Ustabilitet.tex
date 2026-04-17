@@ -3,60 +3,104 @@
 \documentclass[../main.tex]{subfiles}
 \usepackage{amsmath,amssymb}
 \begin{document}
+\subsection{Konditionstal}
+
+Konditionstallet er et mål for graden af numerisk stabilitet af en matrix og angiver, hvor følsom den er over for små ændringer i data. I porteføljeoptimering fungerer det dermed som en indikator for robustheden af de estimerede porteføljevægte.
+
+For stikprøvekovariansmatrixen defineres konditionstallet som
+\begin{equation}
+    \kappa(\hat{\Sigma})=\frac{\lambda_{\max}}{\lambda_{\min}},
+\end{equation}
+hvor $\lambda_{\max}$ og $\lambda_{\min}$ er henholdsvis den største og mindste egenværdi.
+
+En velkonditioneret matrix er karakteriseret ved, at egenværdierne er af samme størrelsesorden, hvilket giver et lavt konditionstal og dermed en stabil inversion. Omvendt vil en meget lille mindste egenværdi føre til et højt konditionstal, hvilket indebærer, at matrixen er tæt på singulær.
+
+Konditionstallet anvendes i det følgende som det centrale mål for numerisk stabilitet.
+
 
 \section{Numerisk ustabilitet}
 
-Numerisk ustabilitet har stor betydning i moderne porteføljeteori, fordi traditionelle optimeringsmetoder ikke nødvendigvis er tilstrækkelige til at sikre stabile og konsistente resultater.
 
-I denne opgave behandler vi numerisk ustabilitet i estimation af populationens kovarians- og korrelationsmatrice. Disse størrelser er ukendte og derfor må estimeres ved hjælp af stikprøvekovariansmatricen og stikprøvekorrelationsmatricen. I estimationsprocessen opstår der støj, som bliver en del af stikprøveestimaterne. Det er derfor vigtigt at skelne mellem to kilder til numerisk ustabilitet i de estimerede matricer.
+Numerisk ustabilitet opstår i moderne porteføljeteori, fordi klassiske optimeringsmetoder kræver inversion af stikprøvekovariansmatrixen. For at denne inversion er veldefineret, kræves det, at matrixen har fuld rang, hvilket indebærer, at antallet af observationer overstiger antallet af aktiver ($T \geq N$) \cite{potters_financial_2005}.
 
-Den første kilde er estimationsstøj fra stikprøveusikkerhed. Den opstår, fordi vi kun observerer et endeligt antal observationer, og den kan reduceres ved at sænke $N/T$-ratioen, hvor $N$ er antallet af aktiver og $T$ er antallet af observationer. Den anden kilde er signal- eller strukturskabt ustabilitet. Her er det selve korrelationsstrukturen i populationen, eksempelvis stærkt krydskorrelerede aktiver, der presser nogle egenværdier mod nul og dermed øger det såkaldte konditionstal. Denne form for ustabilitet skyldes derfor ikke alene estimationen og kan ikke nødvendigvis reduceres ved blot at sænke $N/T$-ratioen.
+Selv når denne betingelse er opfyldt, er det imidlertid ikke tilstrækkeligt til at sikre stabile resultater. Hvis den mindste egenværdi er tæt på nul, bliver konditionstallet højt, og matrixen er dermed dårligt konditioneret.
+
+Problemet kan forstås gennem spektraldekompositionen
+\begin{equation}
+    \hat{\Sigma} = Q \Lambda Q^\top,
+\end{equation}
+hvor $\Lambda = \mathrm{diag}(\lambda_1, \ldots, \lambda_N)$, hvilket giver
+\begin{equation}
+    \hat{\Sigma}^{-1} = Q \Lambda^{-1} Q^\top.
+\end{equation}
+
+Da inversionen indebærer reciprokke egenværdier,
+\begin{equation}
+    \Lambda^{-1} = \mathrm{diag}\left(\frac{1}{\lambda_1}, \ldots, \frac{1}{\lambda_N}\right),
+\end{equation}
+vil små egenværdier føre til store elementer i den inverse kovariansmatrix. Dermed forstærkes estimationsstøjen, hvilket resulterer i numerisk ustabilitet.
+
+Numerisk ustabilitet opstår således, når stikprøvekovariansmatrixen enten er singulær
+eller dårligt konditioneret. I konteksten af egenværdianalyse er det hensigtsmæssigt at
+skelne mellem to komponenter i spektret. Egenværdier, der afspejler den underliggende
+korrelationsstruktur i populationen, betegnes som \textit{signal}, mens egenværdier,
+der alene opstår som følge af endelig stikprøvestørrelse, betegnes som \textit{støj}.
+I det følgende analyseres to fundamentalt forskellige kilder til små egenværdier
+svarende til denne opdeling, estimationsstøj og strukturel afhængighed i data.
+
 
 \subsection{Random Matrix Theory}
 
-For at demonstrere, hvordan estimationsstøj giver anledning til numerisk ustabilitet, vil vi berøre emnet Random Matrix Theory.
 
-Vi betragter en datamatrix $X \in \mathbb{R}^{T \times N}$, hvor hver række svarer til et tidspunkt, og hver søjle svarer til et aktiv. Vi antager, at observationerne er i.i.d. gaussiske med middelværdi $0$ og varians $\sigma^2$ og estimerer stikprøvekovariansmatricen som $\hat{\Sigma}=T^{-1}X^\top X$.
+For at analysere betydningen af estimationsstøj undersøges først, hvordan egenværdierne i stikprøvekovariansmatrixen opfører sig i fravær af egentlig struktur ved hjælp af Random Matrix Theory.
 
-Marchenko-Pastur-teoremet giver, under omstændighederne, og hvis $N,T\to\infty$ med $N/T\to q$, så konvergerer fordelingen af egenværdierne for stikprøvekovariansmatricen mod Marchenko-Pastur-fordelingen:
+Vi betragter en datamatrix $X \in \mathbb{R}^{T \times N}$, hvor hver række svarer til et tidspunkt, og hver søjle svarer til et aktiv. Vi antager, at observationerne er i.i.d. gaussiske med middelværdi $0$ og varians $\sigma^2$ og estimerer stikprøvekovariansmatrixen som $\hat{\Sigma}=T^{-1}X^\top X$.
+
+Marchenko-Pastur-teoremet er et centralt resultat fra Random Matrix Theory, som beskriver den asymptotiske fordeling af egenværdierne for stikprøvekovariansmatrixen under ren støj. Teoremet etablerer dermed en teoretisk reference, der gør det muligt at adskille egenværdier forårsaget af estimationsstøj fra egenværdier, der afspejler egentlig struktur i data. Konkret betragtes grænsetilfældet, hvor $N,T\to+\infty$ med fast forhold $1<T/N<+\infty$, hvorunder den empiriske fordeling af egenværdierne konvergerer mod Marchenko-Pastur-fordelingen.
 
 \begin{equation}
-    \rho_{mp}(\lambda) =
+    f_{MP}(\lambda) =
     \begin{cases}
         \dfrac{T}{N}\dfrac{\sqrt{(\lambda_{+}-\lambda)(\lambda-\lambda_{-})}}{2\pi\lambda\sigma^{2}} & \text{hvis } \lambda \in [\lambda_{-},\lambda_{+}] \\
         0 & \text{hvis } \lambda \notin [\lambda_{-},\lambda_{+}]
     \end{cases}
     \label{eq:mp_density}
 \end{equation}
-
-De asymptotiske grænser for den mindste og største egenværdi er:
+Hvor $T/N$ er ratioen mellem antallet af observationer og antallet af aktiver, og $\lambda$ betegner en tilfældig egenværdi. $\lambda_{\pm}$ er den største og mindste observerede egenværdi. De asymptotiske grænser for $\lambda_{\pm}$ når observationerne udelukkende består af støj er givet ved.
 \begin{equation}
-    \lambda_{\pm} = \sigma^{2} \left( 1 \pm \sqrt{q} \right)^{2}
+    \lambda_{\pm} = \sigma^{2} \left( 1 \pm \sqrt{N/T} \right)^{2}
     \label{eq:mp_bounds}
 \end{equation}
 
-Vi har antaget, at observationerne er i.i.d, så $\Sigma=\sigma^2 I$, hvilket for den tilhørende korrelationsmatrix svarer til $C=I$, ligger egenværdierne inden for intervallet $[\lambda_-,\lambda_+]$ og opstår derfor alene som følge af estimationsstøj. I en empirisk stikprøvekovariansmatrix er det ikke nødvendigvis alle egenværdier som er rene støjrealisationer. Egenværdier uden for nulhypotesens interval fortolkes derfor som et statistisk signal, der ikke alene kan forklares af støj. For finansielle datasæt er signal-til-støj-forholdet kendt for at være lavt, fordi markedsdata typisk indeholder betydelig støj.\cite{lopez_de_prado_machine_2020}
 
-\begin{figure}
+Vi har antaget, at observationerne er i.i.d hvilket medfører at $\Sigma=\sigma^2 I$. Dermed er de sande egenværdier identiske, mens stikprøvekovariansmatrixens egenværdier fordeler sig over intervallet $[\lambda_-,\lambda_+]$ i Marchenko-Pastur tætheden, alene som følge af estimationsstøj.
+Det har konsekvensen når vi har få observationer i forhold til aktiver, så vil $N/T\to1$ og $\lambda_{-}\to0$, med andre ord vil de mindste egenværdier presses mod 0. Dermed bliver matrixen dårligt konditioneret og som følge af  spektraldekompositionen, skaber det kraftig ustabilitet i den inverse stikkovariansmatrix. 
+
+
+I en empirisk stikprøvekovariansmatrix er det ikke alle egenværdier, der er rene støjrealisationer. Egenværdier uden for Marchenko-Pastur-intervallet fortolkes derfor som et statistisk signal, der ikke alene kan forklares af støj. 
+
+For finansielle datasæt er signal-til-støj-forholdet typisk lavt, hvilket indebærer, at hovedparten af egenværdierne forventes at ligge inden for Marchenko-Pastur-intervallet \cite{lopez_de_prado_machine_2020}. Dette giver en central implikation, størstedelen af spektret er domineret af estimationsstøj, mens kun få egenværdier indeholder egentlig information om korrelationsstrukturen.
+
+Dette ses tydeligt i figur \ref{fig:mp_empirical}, hvor hovedparten af egenværdierne ligger inden for det teoretiske interval $[\lambda_-, \lambda_+]$ og dermed er konsistente med støj. Kun få egenværdier afviger markant fra dette interval og kan derfor fortolkes som signal.
+
+
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{Teori/MP fordeling med data.jpg}
-    \caption{Marchenko-Pastur-fordelingen med empiriske data}
+    \caption{Empirisk egenværdifordeling af stikprøvekovariansmatricen estimeret på CRSP-data (histogram) sammenlignet med den teoretiske Marchenko-Pastur-tæthed (orange kurve). Den stiplede linje angiver den øvre MP-grænse $\lambda_+ \approx 1{,}174$. Egenværdier inden for intervallet $[\lambda_-, \lambda_+]$ er konsistente med estimationsstøj, mens egenværdier til højre for $\lambda_+$ fortolkes som signal.}
     \label{fig:mp_empirical}
 \end{figure}
 
-Ser vi kort på matrix-invertering, kan vi med udgangspunkt i MP-fordelingen forstå, hvordan estimationsstøj forværrer inverteringen i en optimeringsmetode. Under antagelser $\Sigma=\sigma^2 I$ og i det asymptotiske regime konvergerer stikprøvekovariansmatricens egenværdier mod MP-fordelingen. Dette har en direkte implikation for den numeriske stabilitet af kovariansestimatet. Når $q$-ratioen ikke er ubetydelig lille, gælder $\lambda_-\to0$ for $q\to1$, hvilket følger af $\lambda_-=\sigma^2(1-\sqrt{q})^2$. Dermed bliver konditionstallet for stikprøvematricen, der er defineret som
-\begin{equation}
-    \kappa(\hat{\Sigma})=\frac{\lambda_{\max}}{\lambda_{\min}}\approx\frac{\lambda_+}{\lambda_-}=\frac{(1+\sqrt{q})^2}{(1-\sqrt{q})^2},
-\end{equation}
-meget stort, når $q$ går mod $1$. Et højt konditionstal indebærer, at matricen er dårligt konditioneret. Små ændringer i data, som i vores tilfælde kan skyldes støj, kan derfor give store udsving i den inverse kovariansmatrice.
+Den store koncentration af egenværdier tæt på den nedre grænse indebærer samtidig, at den mindste egenværdi bliver meget lille, hvilket fører til et højt konditionstal og numerisk ustabilitet. Random Matrix Theory viser således, at numerisk ustabilitet kan opstå selv i fravær af egentlig struktur, udelukkende som følge af estimationsstøj. Samt er centralt indenfor finansielle datasæt.
 
-Dette ses direkte fra spektraldekompositionen. Vi har at stikprøvekovariansmatrixen har formen $\hat{\Sigma}=Q\Lambda Q^\top$ hvor $\lambda=diag(\lambda_1,...,\lambda_N$ og dermed $\hat{\Sigma}^{-1}=Q\Lambda^{-1}Q^\top$.  Udfordringen er, at når $\Lambda^{-1}=\mathrm{diag}(1/\lambda_1,\ldots,1/\lambda_N)$, bliver $1/\lambda_i$ meget stor, når egenværdierne ligger tæt på $0$. Dermed forstærkes estimationsstøjen i inversen, hvilket resulterer i numerisk ustabilitet.
-
-Random Matrix Theory beskriver dermed en type numerisk ustabilitet, der opstår, selv hvis populationens underliggende struktur i udgangspunktet er velkonditioneret. I næste afsnit ser vi på den anden mekanisme, hvor det ikke er estimationsstøjen, men selve signalet i korrelationsstrukturen, der gør matricen numerisk ustabil.
+I det følgende analyseres den alternative mekanisme, hvor små egenværdier opstår som følge af korrelationsstrukturen i populationen.
 
 \subsection{Numerisk ustabilitet som følge af signal}
 
-Selve signalet kan også være en kilde til numerisk ustabilitet i korrelationsmatricen. For at isolere denne mekanisme skifter vi fokus fra stikprøvekovariansmatricen til populationskorrelationsmatricen $C$. Vi starter med en $2\times2$-matrice:
+Selv i fravær af estimationsstøj kan numerisk ustabilitet opstå som følge af den underliggende korrelationsstruktur. For at isolere denne mekanisme skifter vi fokus fra stikprøvekovariansmatricen til populationskorrelationsmatricen $C$, hvor støj ikke indgår. Formålet er at vise, hvordan stærke korrelationer mellem aktiver kan føre til små egenværdier.
+
+ Først betragtes en simpel $2\times2$-korrelationsmatrix hvor $\rho$ er korrelationen mellem aktiver. 
 \begin{equation}
     C = \begin{bmatrix}
         1 & \rho \\
@@ -65,7 +109,7 @@ Selve signalet kan også være en kilde til numerisk ustabilitet i korrelationsm
     \label{eq:c_2x2}
 \end{equation}
 
-Korrelationsmatricen kan diagonaliseres som $CW=W\Lambda$, eller ækvivalent skrives som $C=W\Lambda W^\top$, hvor
+Korrelationsmatrixen kan diagonaliseres som $CW=W\Lambda$, eller ækvivalent skrives som $C=W\Lambda W^\top$, hvor
 
 \begin{equation}
     \Lambda = \begin{bmatrix}
@@ -91,9 +135,39 @@ Den inverse af $C$ er
 \end{equation}
 hvor $\det(C)$ er determinanten af $C$.
 
-I tilfældet hvor $\rho=0$, og aktiverne dermed er ukorrelerede, er $C=I$. Dette svarer til, at egenværdierne er $\lambda_1=\lambda_2=1$, og her er der derfor ingen signalinduceret numerisk ustabilitet. Hvis aktiverne derimod er korrelerede, bliver egenværdierne $\lambda_1=1+\rho$ og $\lambda_2=1-\rho$.
+I tilfældet hvor $\rho = 0$, og aktiverne dermed er ukorrelerede, er
+\begin{equation}
+    C = I.
+\end{equation}
+Dette indebærer, at
+\begin{equation}
+    \lambda_1 = \lambda_2 = 1,
+\end{equation}
+og der opstår derfor ingen signalinduceret numerisk ustabilitet.
 
-På finansielle markeder observeres ofte klyngekorrelationer, hvor nogle aktiver følger hinanden tættere end andre aktiver. Det kan for eksempel være aktiver inden for samme sektor, såsom teknologi eller medicinalindustri. Vi undersøger derfor, hvad der sker, når de to aktiver i eksemplet bliver stærkt korrelerede. Når $\rho\rightarrow1$, fås $\lambda_1\rightarrow2$, mens $\lambda_2\rightarrow0$. Dermed bliver determinanten $\det(C)=(1+\rho)(1-\rho)=1-\rho^2$, og i grænsen hvor aktiverne går mod fuld korrelation, $\rho\rightarrow1$, fås $\det(C)\rightarrow0$. Matricen nærmer sig derfor singularitet. Det følger, at den inverse kovariansmatrice igen bliver yderst følsom over for små ændringer i korrelationsmatricen. Forskellen fra Random Matrix Theory-afsnittet er imidlertid, at den lille egenværdi her ikke opstår som følge af stikprøveusikkerhed, men som følge af selve signalet i populationskorrelationen.
+Hvis aktiverne derimod er korrelerede, fås egenværdierne
+\begin{equation}
+    \lambda_1 = 1 + \rho, \qquad \lambda_2 = 1 - \rho.
+\end{equation}
+
+Det ses dermed, at graden af korrelation direkte bestemmer spredningen i egenværdierne.
+
+På finansielle markeder observeres ofte klyngekorrelationer, hvor nogle aktiver følger hinanden tættere end andre, eksempelvis inden for samme sektor som teknologi eller medicinalindustri. For at illustrere konsekvensen betragtes tilfælde, hvor de to aktiver i eksemplet bliver stærkt korrelerede.
+
+Når $\rho \rightarrow 1$, fås
+\begin{equation}
+    \lambda_1 \rightarrow 2, \qquad \lambda_2 \rightarrow 0.
+\end{equation}
+
+Dette indebærer, at næsten al varians samles i én retning, men den anden retning næsten bliver uden varians.
+\begin{equation}
+    \det(C) = (1+\rho)(1-\rho) = 1 - \rho^2 \rightarrow 0,
+\end{equation}
+hvilket betyder, at matrixen nærmer sig singularitet.
+
+Som følge heraf bliver den inverse matrix yderst følsom over for små ændringer i korrelationsstrukturen.
+
+Den centrale pointe er, at den lille egenværdi her ikke opstår som følge af estimationsstøj, men som en direkte konsekvens af den underliggende korrelationsstruktur.
 
 Hvis vi udvider intuitionen til højere dimensioner, bliver det tydeligere, hvordan klynger påvirker resten af korrelationsmatricen. For $C$ gælder, at
 \begin{equation}

@@ -1,15 +1,53 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
-Brief history of klassisk porteføljeoptimeringsmetoder
-
-Markowithc
-markowtich curse
-Black Scholes
-
-CAPM og minimum varians
-
-EQ
 
 
+Harry Markowitz præsenterede i 1952 noget revolutionært indenfor porteføljeteori. Markowitz præsenterede ideen for at porteføljesammensætninger burde evalueres med både afkast, men også for risiko. Ud fra denne ide, fandt Markowitz frem til minimum varians porteføljen der kan løses analytisk ud fra minimeringsproblemet. 
 
-\end{document}
+\begin{equation}
+    \min_{\mathbf{w}} \mathbf{w}^\top \boldsymbol{\Sigma} \mathbf{w}
+    \quad \text{u.b.b} \quad \mathbf{w}^\top \mathbf{1} = 1
+    \label{eq:placeholder_label}
+\end{equation}
+Hvor $w$ er vægtene, og bibetingelsen sikrer at vægtene summerer til 1.
+Løsningen til minimeringsproblemmet er hermed.
+\begin{equation}
+    \mathbf{w}_{MV} = \frac{\Sigma^{-1} \mathbf{1}}{\mathbf{1}^\top \Sigma^{-1} \mathbf{1}}
+    \label{eq:placeholder_label}
+\end{equation}
+
+Ud fra Markowitz ideer, blev Capital Asset Pricing Model skabt af William Sharpe i 1964. Her introducerer han en model bygget på simpel lineær regression og kobler forventet afkast sammen med systematisk risiko. Her er Minimum Varians porteføljen, repræsenteret på CAPM-Frontier.
+\subsubsection{Sharpe Ratio}
+Sharpe ratio blev også udviklet af William Sharpe, og bygger på Markowitz ideer, at afkast ikke var det eneste man burde vurdere en portefølje på, men også risiko. 
+
+Dermed fandt Sharpe William , Sharpe ratioen der måler sammenhængen mellem afkast og volatilitet. Dermed alle porteføljekombinationer der ligger på CAPM-linjen har højest mulig Sharpe ratio. Den er udtrykket ved.
+
+\begin{equation}
+    
+\end{equation}
+
+\subsection{Andre porteføljeoptimeringsmetoder}
+
+\subsubsection{Equal Weight porteføljen}
+
+Equal weight strategien indebærer at den allokerer vægtene ligeligt på tværs af alle aktiver har vægten. 
+\begin{equation}
+    \mathbf{w}_{i} = 1/N
+    \label{eq:placeholder_label}
+\end{equation}
+En central fordel ved denne tilgang er, at den ikke afhænger af estimerede afkast eller kovarianser. Hvilket gør den immun over for estimationsfejl og numerisk ustabilitet i modsætning til for eksempel Minimum varians. Samt er det empirisk veldokumenteret, at equal weight-porteføljer kan udkonkurrere porteføljeoptimeringsmetoder målt på både afkast og sharpe ratio.\cite{malladi_equal-weighted_2017}
+
+
+
+\subsubsection{Minimum Varians Long Only}
+For at have et fair sammenligningsgrundlang introduceres MV long only porteføljen. Den består af samme optimeringsmål som MV porteføljen, men med en ekstra bibetingelse hvorvidt at man kun kan gå lang i aktiver bliver introduceret. Løsningsmæssigt kan dette ikke løses analytisk, men skal løses numerisk eftersom systemet er overbestemt med to bibetingelser. Dermed har den kovariansmatricen ikke behov for at invertereres, hvilket resulterer i at den ikke er ligeså sensitiv over for numerisk ustabilitet.
+
+
+\subsection{Utilstrækkeligheder ved MV og EQ porteføljer}
+
+
+
+
+
+
+
