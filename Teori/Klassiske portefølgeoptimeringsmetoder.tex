@@ -2,52 +2,84 @@
 \begin{document}
 
 
-Harry Markowitz præsenterede i 1952 noget revolutionært indenfor porteføljeteori. Markowitz præsenterede ideen for at porteføljesammensætninger burde evalueres med både afkast, men også for risiko. Ud fra denne ide, fandt Markowitz frem til minimum varians porteføljen der kan løses analytisk ud fra minimeringsproblemet. 
+\section{Klassiske porteføljeoptimeringsmetoder}
+Klassiske porteføljeoptimeringsmetoder tager udgangspunkt i den ramme for middelværdi og varians, som blev formaliseret af Harry Markowitz, og som fortsat danner et centralt teoretisk referencepunkt i porteføljeteori. I denne ramme beskrives porteføljevalget som en afvejning mellem forventet afkast og risiko, hvor sidstnævnte måles ved porteføljens varians.
 
+\subsection{Markowitz' moderne porteføljeteori}
+Markowitz' centrale bidrag består i at formulere porteføljevalget som et problem, hvor investor ikke alene søger højt forventet afkast, men samtidig tager højde for risikoen i den samlede portefølje. I den klassiske ramme for middelværdi og varians beskrives en portefølje ved en vægtvektor $\mathbf{w}\in\mathbb{R}^{N}$, hvor hvert element angiver kapitalandelen investeret i et givent aktiv. Lader man $\boldsymbol{\mu}$ betegne vektoren af forventede afkast og $\boldsymbol{\Sigma}$ betegne kovariansmatricen, fås porteføljens forventede afkast og varians som
+\begin{equation}
+    \mathbb{E}[R_p] = \mathbf{w}^\top \boldsymbol{\mu},
+    \qquad
+    \operatorname{Var}(R_p) = \mathbf{w}^\top \boldsymbol{\Sigma} \mathbf{w}.
+    \label{eq:portfolio_moments}
+\end{equation}
+Det følger heraf, at diversifikation ikke alene afhænger af de enkelte aktivers risiko, men af den samlede kovariansstruktur mellem aktiverne. Netop denne indsigt udgør fundamentet for de klassiske porteføljeoptimeringsmetoder.
+
+\subsubsection{Efficient frontier}
+Hvis målet ikke alene er at minimere variansen, men at identificere den lavest mulige risiko for et givent forventet afkastniveau, udvides problemstillingen til det generelle problem for middelværdi og varians
+\begin{equation}
+    \min_{\mathbf{w}} \mathbf{w}^\top \boldsymbol{\Sigma} \mathbf{w}
+    \quad \text{u.b.b} \quad
+    \mathbf{w}^\top \mathbf{1} = 1,
+    \quad
+    \mathbf{w}^\top \boldsymbol{\mu} = \bar{\mu}_p
+    \label{eq:mean_variance_problem}
+\end{equation}
+hvor $\bar{\mu}_p$ betegner et givet målafkast. Mængden af løsninger til dette problem udgør efficient frontier, dvs. de porteføljer, som for hvert forventet afkastniveau har den lavest mulige varians. Det laveste punkt på den efficiente rand udgøres af den globale minimum varians portefølje, mens bevægelse op ad den efficiente rand indebærer højere forventet afkast ledsaget af højere risiko.
+
+I forlængelse heraf videreførte William Sharpe denne intuition i udviklingen af Capital Asset Pricing Model. I denne sammenhæng anvendes CAPM linjen ofte som en grafisk illustration af den klassiske relation mellem afkast og risiko i mean variance litteraturen. Figuren nedenfor tjener alene som en konceptuel illustration.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Teori/efficient_frontier_cbs.png}
+    \caption{Illustration af efficient frontier og CAPM linjen. Figuren anvendes som en konceptuel illustration af den klassiske sammenhæng mellem risiko og forventet afkast.}
+    \label{fig:capm_line}
+\end{figure}
+
+\subsection{Udvalgte porteføljer}
+I forlængelse af den klassiske ramme for middelværdi og varians er det naturligt at fremhæve tre velkendte porteføljer. To af disse udspringer direkte af minimum varians problemet, mens den tredje udgøres af en enkel og parameterfri allokeringsregel. Tilsammen illustrerer de forskellige måder, hvorpå porteføljevægte kan fastlægges i den klassiske porteføljelitteratur.
+
+\subsubsection{Minimum varians porteføljer}
+De to første porteføljer udspringer begge af den klassiske minimum varians tilgang og adskiller sig alene ved, om korte positioner tillades. Dermed belyser de samme grundlæggende optimeringslogik under forskellige implementeringsmæssige restriktioner.
+
+Den klassiske minimum varians portefølje vælges som den fuldt investerede portefølje, der har den lavest mulige varians. Optimeringsproblemet kan skrives som
 \begin{equation}
     \min_{\mathbf{w}} \mathbf{w}^\top \boldsymbol{\Sigma} \mathbf{w}
     \quad \text{u.b.b} \quad \mathbf{w}^\top \mathbf{1} = 1
-    \label{eq:placeholder_label}
+    \label{eq:gmv_problem}
 \end{equation}
-Hvor $w$ er vægtene, og bibetingelsen sikrer at vægtene summerer til 1.
-Løsningen til minimeringsproblemmet er hermed.
+Hvor bibetingelsen sikrer, at hele formuen allokeres på tværs af aktiverne. Under antagelse af, at $\boldsymbol{\Sigma}$ er invertibel, har problemet den analytiske løsning
 \begin{equation}
-    \mathbf{w}_{MV} = \frac{\Sigma^{-1} \mathbf{1}}{\mathbf{1}^\top \Sigma^{-1} \mathbf{1}}
-    \label{eq:placeholder_label}
+    \mathbf{w}_{MV} = \frac{\boldsymbol{\Sigma}^{-1} \mathbf{1}}{\mathbf{1}^\top \boldsymbol{\Sigma}^{-1} \mathbf{1}}
+    \label{eq:gmv_solution}
 \end{equation}
+Porteføljen afhænger således udelukkende af kovariansstrukturen og ikke af forventede afkast. Den udgør derfor det klassiske udgangspunkt for minimum varians allokering og et centralt referencepunkt i litteraturen om klassisk porteføljeoptimering.
 
-Ud fra Markowitz ideer, blev Capital Asset Pricing Model skabt af William Sharpe i 1964. Her introducerer han en model bygget på simpel lineær regression og kobler forventet afkast sammen med systematisk risiko. Her er Minimum Varians porteføljen, repræsenteret på CAPM-Frontier.
-\subsubsection{Sharpe Ratio}
-Sharpe ratio blev også udviklet af William Sharpe, og bygger på Markowitz ideer, at afkast ikke var det eneste man burde vurdere en portefølje på, men også risiko. 
-
-Dermed fandt Sharpe William , Sharpe ratioen der måler sammenhængen mellem afkast og volatilitet. Dermed alle porteføljekombinationer der ligger på CAPM-linjen har højest mulig Sharpe ratio. Den er udtrykket ved.
-
+En naturlig videreførelse er minimum varians porteføljen under en restriktion om kun at gå lang. Denne portefølje har samme optimeringsmål som den ubegrænsede minimum varians portefølje, men udelukker korte positioner, hvilket giver problemet
 \begin{equation}
-    
+    \min_{\mathbf{w}} \mathbf{w}^\top \boldsymbol{\Sigma} \mathbf{w}
+    \quad \text{u.b.b} \quad \mathbf{w}^\top \mathbf{1} = 1, \quad w_i \geq 0 \;\; \forall i
+    \label{eq:mv_long_only}
 \end{equation}
-
-\subsection{Andre porteføljeoptimeringsmetoder}
-
+I modsætning til den analytiske løsning i \eqref{eq:gmv_solution} kan dette problem ikke løses i lukket form og må derfor håndteres numerisk. Restriktionen om kun at gå lang fører typisk til mere spredte og implementerbare vægte. 
 \subsubsection{Equal Weight porteføljen}
-
-Equal weight strategien indebærer at den allokerer vægtene ligeligt på tværs af alle aktiver har vægten. 
+Equal Weight porteføljen allokerer kapitalen ligeligt på tværs af alle $N$ aktiver og udgør dermed den mest simple allokeringsregel.
 \begin{equation}
-    \mathbf{w}_{i} = 1/N
-    \label{eq:placeholder_label}
+    w_i = \frac{1}{N}, \qquad i = 1,\ldots,N
+    \label{eq:equal_weight}
 \end{equation}
-En central fordel ved denne tilgang er, at den ikke afhænger af estimerede afkast eller kovarianser. Hvilket gør den immun over for estimationsfejl og numerisk ustabilitet i modsætning til for eksempel Minimum varians. Samt er det empirisk veldokumenteret, at equal weight-porteføljer kan udkonkurrere porteføljeoptimeringsmetoder målt på både afkast og sharpe ratio.\cite{malladi_equal-weighted_2017}
+Porteføljen kræver hverken estimater af forventede afkast eller kovarianser og er dermed fri for de estimeringsproblemer, der knytter sig til de mere modelbaserede optimeringsmetoder. Netop fordi den undgår parameterestimation, anvendes den ofte som reference i litteraturen og kan i praksis være vanskelig at overgå i sammenligninger uden for stikprøven.\cite{malladi_equal-weighted_2017} Den udgør derfor et nærliggende referencepunkt over for de klassiske optimeringsmetoder.
 
+\subsection{Begrænsninger ved klassiske porteføljeoptimeringsmetoder}
+Selvom den klassiske ramme for middelværdi og varians er teoretisk elegant, afhænger den i praksis af, at forventede afkast og kovarianser kan estimeres med tilstrækkelig præcision. Særligt kovariansmatricen spiller en central rolle, da den direkte bestemmer både den beregnede risiko og vægtene i de optimerede løsninger.
 
+Det indebærer, at selv relativt små ændringer i de estimerede input kan føre til mærkbare ændringer i de beregnede porteføljer. I praksis kan dette resultere i ustabile eller koncentrerede vægte og dermed skabe en afstand mellem den teoretisk optimale portefølje og den portefølje, der faktisk viser sig robust i empiriske data.
 
-\subsubsection{Minimum Varians Long Only}
-For at have et fair sammenligningsgrundlang introduceres MV long only porteføljen. Den består af samme optimeringsmål som MV porteføljen, men med en ekstra bibetingelse hvorvidt at man kun kan gå lang i aktiver bliver introduceret. Løsningsmæssigt kan dette ikke løses analytisk, men skal løses numerisk eftersom systemet er overbestemt med to bibetingelser. Dermed har den kovariansmatricen ikke behov for at invertereres, hvilket resulterer i at den ikke er ligeså sensitiv over for numerisk ustabilitet.
+Disse udfordringer er centrale for forståelsen af, hvorfor klassiske optimeringsmetoder ofte er vanskelige at anvende direkte på finansielle datasæt. I det følgende teoriafsnit uddybes derfor særligt den numeriske ustabilitet, som opstår, når stikprøvekovariansmatricen skal estimeres og efterfølgende indgå i porteføljekonstruktionen.
 
+\ifSubfilesClassLoaded{
+    \bibliographystyle{plain}
+    \bibliography{../references}
+}{}
 
-\subsection{Utilstrækkeligheder ved MV og EQ porteføljer}
-
-
-
-
-
-
-
+\end{document}
