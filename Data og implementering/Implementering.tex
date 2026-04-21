@@ -30,7 +30,7 @@ Disse datakrav indebærer en klar afvejning. På den ene side forbedrer de konsi
 
 \subsection{Walk-forward-analyse}
 
-Vi anvender en walk-forward-analyse, da den betragtes som en gold standard ved test af finansielle handelsstrategier. Metoden er valgt for at sikre en konsistent testprocedure, så de forskellige porteføljers præstation kan vurderes på tværs af flere evalueringsmål. En walk-forward-analyse består af en in-sample-periode og en out-of-sample-periode. Formålet er at estimere modellen på baggrund af træningsdata i in-sample-perioden og derefter evaluere den på en efterfølgende testperiode uden look-ahead bias. Det sikrer, at der ikke er overlap mellem perioderne, som kan kompromittere testens integritet.
+Vi anvender en walk-forward-analyse, da den betragtes som er standard ved test af finansielle handelsstrategier. Metoden er valgt for at sikre en konsistent testprocedure, så de forskellige porteføljers præstation kan vurderes på tværs af flere evalueringsmål. En walk-forward-analyse består af en in-sample-periode og en out-of-sample-periode. Formålet er at estimere modellen på baggrund af træningsdata i in-sample-perioden og derefter evaluere den på en efterfølgende testperiode uden look-ahead bias. Det sikrer, at der ikke er overlap mellem perioderne, som kan kompromittere testens integritet.
 I in-sample-perioden estimeres korrelationsstrukturerne på baggrund af 120 måneders data og anvendes derefter i de valgte metoder. I out-of-sample-perioden bruges den efterfølgende måned til at vurdere porteføljernes præstation. Walk-forward-testen kører iterativt, og mellem hver iteration forskydes både in-sample- og out-of-sample-perioden med én måned. I denne sammenhæng fungerer metoden som en backtest inden for rammen af en walk-forward-analyse.
 
 \begin{figure}
@@ -41,7 +41,7 @@ I in-sample-perioden estimeres korrelationsstrukturerne på baggrund af 120 mån
 \end{figure}
 
 \subsection{Estimering af kovarians- og korrelationsmatricer}
-Vi bruger Python-pakken pandas til at estimere kovariansen mellem aktiv $i$ og $j$. Estimatet beregnes på baggrund af de måneder, hvor begge aktiver har observerede data, i stedet for over alle måneder. Dermed kan den estimerede kovarians mellem aktiv $i$ og $j$ være baseret på andre måneder end kovariansen mellem $j$ og $k$. Det kan medføre større numerisk ustabilitet, men sikrer samtidig flere observationer til det samlede estimat.
+Vi bruger Python-pakken pandas til at estimere kovariansen mellem aktiv $i$ og $j$. Estimatet beregnes på baggrund af de måneder hvor alle aktiver i porteføljen har data. Dette kan være til et mindre datagrundlag men et mere robust kovariansestimat.
 
 Pandas beregner stikprøveestimatoren for kovariansen mellem aktiv $i$ og $j$ som
 \begin{equation}

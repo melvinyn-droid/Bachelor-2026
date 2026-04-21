@@ -53,7 +53,7 @@ Hvor bibetingelsen sikrer, at hele formuen allokeres på tværs af aktiverne. Un
     \mathbf{w}_{MV} = \frac{\boldsymbol{\Sigma}^{-1} \mathbf{1}}{\mathbf{1}^\top \boldsymbol{\Sigma}^{-1} \mathbf{1}}
     \label{eq:gmv_solution}
 \end{equation}
-Porteføljen afhænger således udelukkende af kovariansstrukturen og ikke af forventede afkast. Den udgør derfor det klassiske udgangspunkt for minimum varians allokering og et centralt referencepunkt i litteraturen om klassisk porteføljeoptimering.
+Porteføljen afhænger således udelukkende af kovariansstrukturen og ikke af forventede afkast. Den udgør derfor det klassiske udgangspunkt for minimum varians allokering og et centralt referencepunkt i litteraturen om klassisk porteføljeoptimering.\cite{markowitz_portfolio_1952}
 
 En naturlig videreførelse er minimum varians porteføljen under en restriktion om kun at gå lang. Denne portefølje har samme optimeringsmål som den ubegrænsede minimum varians portefølje, men udelukker korte positioner, hvilket giver problemet
 \begin{equation}
@@ -61,7 +61,8 @@ En naturlig videreførelse er minimum varians porteføljen under en restriktion 
     \quad \text{u.b.b} \quad \mathbf{w}^\top \mathbf{1} = 1, \quad w_i \geq 0 \;\; \forall i
     \label{eq:mv_long_only}
 \end{equation}
-I modsætning til den analytiske løsning i \eqref{eq:gmv_solution} kan dette problem ikke løses i lukket form og må derfor håndteres numerisk. Restriktionen om kun at gå lang fører typisk til mere spredte og implementerbare vægte. 
+I modsætning til den analytiske løsning kan dette problem ikke løses i lukket form og må derfor håndteres numerisk. Restriktionen om kun at gå lang ville man intuitivt tro at det ville føre til en dårligere præsterende portefølje. Dog har det vist sig at den ofte kan udkonkurrere den klassiske minimum varians portefølje, da ved at fjerne negative vægte, reducerer man porteføljens påvirkning af støjfulde kovariansestimationer.\cite{jagannathan_risk_2003}
+
 \subsubsection{Equal Weight porteføljen}
 Equal Weight porteføljen allokerer kapitalen ligeligt på tværs af alle $N$ aktiver og udgør dermed den mest simple allokeringsregel.
 \begin{equation}
@@ -71,11 +72,9 @@ Equal Weight porteføljen allokerer kapitalen ligeligt på tværs af alle $N$ ak
 Porteføljen kræver hverken estimater af forventede afkast eller kovarianser og er dermed fri for de estimeringsproblemer, der knytter sig til de mere modelbaserede optimeringsmetoder. Netop fordi den undgår parameterestimation, anvendes den ofte som reference i litteraturen og kan i praksis være vanskelig at overgå i sammenligninger uden for stikprøven.\cite{malladi_equal-weighted_2017} Den udgør derfor et nærliggende referencepunkt over for de klassiske optimeringsmetoder.
 
 \subsection{Begrænsninger ved klassiske porteføljeoptimeringsmetoder}
-Selvom den klassiske ramme for middelværdi og varians er teoretisk elegant, afhænger den i praksis af, at forventede afkast og kovarianser kan estimeres med tilstrækkelig præcision. Særligt kovariansmatricen spiller en central rolle, da den direkte bestemmer både den beregnede risiko og vægtene i de optimerede løsninger.
-
-Det indebærer, at selv relativt små ændringer i de estimerede input kan føre til mærkbare ændringer i de beregnede porteføljer. I praksis kan dette resultere i ustabile eller koncentrerede vægte og dermed skabe en afstand mellem den teoretisk optimale portefølje og den portefølje, der faktisk viser sig robust i empiriske data.
-
-Disse udfordringer er centrale for forståelsen af, hvorfor klassiske optimeringsmetoder ofte er vanskelige at anvende direkte på finansielle datasæt. I det følgende teoriafsnit uddybes derfor særligt den numeriske ustabilitet, som opstår, når stikprøvekovariansmatricen skal estimeres og efterfølgende indgå i porteføljekonstruktionen.
+Selvom den klassiske ramme for middelværdi og varians er teoretisk elegant, afhænger den i praksis af, at forventede afkast og kovarianser kan estimeres med tilstrækkelig præcision. Særligt kovariansmatricen spiller en central rolle, da den direkte bestemmer både den beregnede risiko og vægtene i de optimerede løsninger. 
+Estimering af især kovariansmatricen kan i finansielle datasæt være behæftet med betydelig usikkerhed, særligt når forholdet mellem antal aktiver og observationer er højt. Dette medfører, at den estimerede kovariansmatrix bliver numerisk ustabil, hvilket kan føre til stærkt varierende og økonomisk urealistiske porteføljevægte i de klassiske optimeringsmetoder.
+\cite{lopez_de_prado_building_2016}
 
 \ifSubfilesClassLoaded{
     \bibliographystyle{plain}
