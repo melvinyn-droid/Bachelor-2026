@@ -3,8 +3,49 @@
 \documentclass[../main.tex]{subfiles}
 \begin{document}
 
-\section{Kovariansmatricen}
+\section{Resultater}
 
+Dette afsnit præsenterer de deskriptive resultater, der danner grundlag for den efterfølgende sammenligning af porteføljemetoderne. Først vises konditionstallets udvikling over tid for den rullende stikprøvekovariansmatrix, som indikerer, hvornår klassisk minimum varians forventes at være mest skrøbelig. Dernæst vises et dendrogram og den tilhørende korrelationsmatrix for et udvalgt estimationsvindue, som illustrerer den strukturelle information, HRP bygger sin allokering på.
 
+\subsection{Konditionstallets udvikling over tid}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/condition_number_over_time.png}
+    \caption{Konditionstallet $\kappa(\hat{\Sigma})=\lambda_{\max}/\lambda_{\min}$ for den rullende stikprøvekovariansmatrix i hvert estimationsvindue med 120 måneders lookback. Y-aksen er vist på log-skala.}
+    \label{fig:condition_number_over_time}
+\end{figure}
+
+Figur \ref{fig:condition_number_over_time} viser konditionstallet for hvert evalueringsvindue fra 2000 og frem. Niveauet er gennem hele perioden højt, af størrelsesorden $10^4$ og opefter. Det er forventeligt, når antallet af gyldige observationer i hvert vindue ($T_{\text{common}}\approx 118$) ligger tæt på antallet af aktiver: en stikprøvekovariansmatrix med så begrænset margen presser den mindste egenværdi nedad, hvilket Marchenko--Pastur-grænsen angiver som den nedre asymptotiske forventning, og det alene giver et højt baseline-niveau for $\kappa$.
+
+Forløbet er ikke stationært. Frem til ca.\ 2007 svinger $\kappa$ omkring $10^4$ med et lokalt minimum i 2002--2003. Omkring 2008 skifter serien til et markant højere niveau tæt på $10^5$ og forbliver der gennem resten af perioden med en top i 2017--2018. Bemærk at skiftet i 2008 ikke er en kortvarig spike, men et varigt niveaushift: finanskrisens stærkt korrelerede observationer indgår i det rullende vindue lige indtil ca.\ 2018--2019, og det efterfølgende fald frem mod 2020 er konsistent med, at disse observationer gradvist falder ud af estimationen.
+
+Fortolkningsmæssigt afspejler niveauskift og lokale spikes perioder, hvor aktierne i universet i højere grad bevæger sig sammen. Variansen koncentreres i få dominerende retninger, og forholdet mellem $\lambda_{\max}$ og $\lambda_{\min}$ stiger. Effekten rammer især de metoder, som kræver inversion af $\hat{\Sigma}$: i klassisk minimum varians indgår reciprokke egenværdier direkte, og små $\lambda_{\min}$ forstærker estimationsstøjen og gør vægtene følsomme over for små ændringer i data. Equal weight og HRP undgår inversionen og er derfor ikke direkte eksponerede over for dette konditioneringsproblem. Konditionstallet fungerer dermed her som et diagnostisk benchmark for, hvornår vi på forhånd forventer, at klassisk minimum varians udviser stor turnover og ustabile vægte, og hvornår forskellen mellem metoderne bør være mest udtalt.
+
+\subsection{Dendrogram-snapshot}
+
+For at illustrere den hierarkiske struktur, som HRP bygger sin allokering på, vises et snapshot for estimationsvinduet frem til december 2021.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/dendrogram_snapshot_2021-12.png}
+    \caption{Dendrogram for estimationsvinduet frem til december 2021. Højden, hvor to grene mødes, svarer til afstanden $d_{ij}=\sqrt{\tfrac{1}{2}(1-\rho_{ij})}$ mellem aktiver eller klynger, og farvelægningen markerer de to største klynger under grænsen omkring $0{,}48$.}
+    \label{fig:resultater_dendrogram}
+\end{figure}
+
+I figur \ref{fig:resultater_dendrogram} ses, at den overordnede struktur domineres af to store klynger (markeret i blå og rød), der først flettes sammen højt i træet omkring afstanden $0{,}48$. Før den endelige sammenfletning isoleres enkelte grene som singletons højt oppe i hierarkiet, hvilket indikerer få aktiver, der ikke passer naturligt ind i nogen af de to store grupper. I bunden af træet samles mange aktiver i tætte par omkring afstand $0{,}1$--$0{,}2$, hvilket svarer til parkorrelationer tæt på $0{,}9$. Spredningen fra bunden til toppen afspejler dermed et univers med mange veldefinerede lokale klynger, men uden en ren opdeling i to ligeværdige grupper. De to hovedklynger er desuden asymmetriske i størrelse, hvilket er relevant for den rekursive bisektion, fordi den deler rækkefølgen i lige store dele snarere end på grænsen mellem de to hovedklynger. Dendrogrammet udgør samtidig den permutation, som quasi-diagonaliseringen i det følgende afsnit er baseret på.
+
+\subsection{Korrelationsmatrix før og efter quasi-diagonalisering}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{Analyse og Resultater/corr_unprocessed_vs_processed_2021-12.png}
+    \caption{Korrelationsmatrix for estimationsvinduet frem til december 2021 ($N=100$ aktiver). Øverst vises matricen i den oprindelige rækkefølge, mens aktiverne nederst er omordnet efter permutationen fra dendrogrammet i figur \ref{fig:resultater_dendrogram}.}
+    \label{fig:resultater_korrelationsmatrice}
+\end{figure}
+
+Figur \ref{fig:resultater_korrelationsmatrice} viser den samme information som dendrogrammet i en anden repræsentation. I den ikke-behandlede matrix (øverst) fordeler korrelationerne sig tilsyneladende uden systematisk mønster, selvom niveauet gennemgående er højt. Efter quasi-diagonaliseringen (nederst) samles de høje korrelationer i sammenhængende blokke omkring diagonalen, og særligt i den nedre højre kvadrant ses en markant tæt blok af stærkt korrelerede aktiver. Dette er den blokstruktur, HRP rekursivt opdeler ved bisektionen: hver opdeling på den sorterede rækkefølge svarer til et snit mellem klynger i dendrogrammet, og det er denne egenskab, der gør allokeringen meningsfuld uden inversion af kovariansmatrixen.
+
+Den samme figur forklarer samtidig, hvorfor konditionstallet i figur \ref{fig:condition_number_over_time} er højt i netop dette vindue. En dominerende blok af aktiver med fælles korrelationsniveau betyder, at en stor del af variansen koncentreres i få fælles retninger, mens de resterende retninger har små egenværdier. Det er den samme strukturelle mekanisme, som i teoriafsnittet blev beskrevet som klyngeinduceret ustabilitet, og den forbinder dermed de to figurer: stærke klynger i dendrogrammet er den samme egenskab ved data, som driver konditionstallet opad. Forskellen er, at hvor klassisk minimum varians ``straffes'' af disse blokke gennem inversionen af $\hat{\Sigma}$, anvender HRP dem aktivt som basis for allokeringen.
 
 \end{document}

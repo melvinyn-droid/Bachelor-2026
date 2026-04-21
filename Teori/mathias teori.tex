@@ -14,7 +14,7 @@ Clustering kan meget kort defineres som forskellige metoder til at gruppere obje
     \centering
     \includegraphics[width=0.5\linewidth]{HvC.png}
     \caption{På venstre side af figuren er hierakisk clustering visualiseret. Her er datasættet opdelt i flere "lag" klynger, hvor hele datasættet er en klynge som også er opdelt i 3 mindre klynger. I modsætning, ses partitionel clustering i højre side af figuren, hvor datasættet opdeles i særskilte klynger. }
-    \label{fig:hvc}
+    \label{fig:hierarchical_vs_partitional}
 \end{figure}
 
 Partitionale clusteringmetoder, f.eks. ``K-means clustering'', fastlægger et antal klynger, K, som på forhånd er bestemt. Formålet er at minimere den samlede variation inden for klyngerne, idet de bliver grupperet ud fra distancen til en ``centroid'', som er midterpunktet af hver klynge. Denne flyttes ud fra antal datapunkter der er i hver klynge. Metoden er specielt brugbar når man på forhånd ved hvor mange klynger der skal dannes. Dette gør dem særligt velegnede i situationer, hvor problemet er veldefineret, og hvor man ønsker en direkte og beregningsmæssigt effektiv opdeling af data i et givent antal grupper.
@@ -30,7 +30,7 @@ Den hierakiske rækkefølge er ikke vist på samme måde i den venstre visualise
     \centering
     \includegraphics[width=0.5\linewidth]{clustertodendrogram.png}
     \caption{Visuel representation af hvordan heirakisk klyngedannelse af et datasæt former et dendrogram. I venstre side, som udelukkende visueliserer grupperingen, mister man fornemmelsen af klyngedannelsesrækkefølgen. I modsætning ses denne i dendrogrammet i højre side.}
-    \label{fig:placeholder}
+    \label{fig:cluster_to_dendrogram}
 \end{figure}
 
 \textbf{HRP's brug af hierarkisk, frem for partitionel clustering, skyldes den strukturelle form ved et dendrogram. HRP bruger dendrogrammet både for at kunne skabe en fornuftig opdeling af aktiver og for at styre en rekursiv allokering langs træets grene. Et fladt partitional output (f.eks. K-means) leverer ikke i sig selv denne nestede struktur.~\cite{kaae_karppinen_hierarchical_2022,lopez_de_prado_building_2016}
@@ -47,7 +47,7 @@ Resulatet bliver, for begge algoritmer, det samme dannede dendrogram, men i mods
     \centering
     \includegraphics[width=0.5\linewidth]{agglvdivis.png}
     \caption{Illustration af den kontrære rækkefølge hvori den agglomerative og divisive algortime danner klynger. Resultatet forbliver ens for begge algoritmer.}
-    \label{fig:placeholder}
+    \label{fig:agglomerative_vs_divisive}
 \end{figure}
 
 
@@ -247,6 +247,6 @@ Rekursiv bisection kan således fortolkes som en hierarkisk generalisering af in
     \centering
     \includegraphics[width=0.5\linewidth]{Teori/Dendogram Mathias.png}
     \caption{visuel repsentation af dendrogram}
-    \label{fig:hvc}
+    \label{fig:hrp_dendrogram_theory}
 \end{figure}
 \end{document}
