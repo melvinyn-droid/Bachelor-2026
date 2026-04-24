@@ -1,0 +1,61 @@
+model,rank,weight
+Equal Weight,1,0.01
+Equal Weight,2,0.01
+Equal Weight,3,0.01
+Equal Weight,4,0.01
+Equal Weight,5,0.01
+Equal Weight,6,0.01
+Equal Weight,7,0.01
+Equal Weight,8,0.01
+Equal Weight,9,0.01
+Equal Weight,10,0.01
+Equal Weight,11,0.01
+Equal Weight,12,0.01
+Equal Weight,13,0.01
+Equal Weight,14,0.01
+Equal Weight,15,0.01
+Minimum Variance Classical,1,0.7817914576018546
+Minimum Variance Classical,2,0.35429359933206933
+Minimum Variance Classical,3,0.2936593118945616
+Minimum Variance Classical,4,0.2634656729825322
+Minimum Variance Classical,5,0.24041813348412064
+Minimum Variance Classical,6,0.22322788429105112
+Minimum Variance Classical,7,0.2091029858054288
+Minimum Variance Classical,8,0.1972594357424753
+Minimum Variance Classical,9,0.18579720661894986
+Minimum Variance Classical,10,0.17611737835416835
+Minimum Variance Classical,11,0.16741715497509804
+Minimum Variance Classical,12,0.15987943680242628
+Minimum Variance Classical,13,0.15303016241989065
+Minimum Variance Classical,14,0.14684891618209597
+Minimum Variance Classical,15,0.14009560734624624
+Minimum Variance Long Only,1,0.21638725675522172
+Minimum Variance Long Only,2,0.14947938775352435
+Minimum Variance Long Only,3,0.10642961708966298
+Minimum Variance Long Only,4,0.08309247928483919
+Minimum Variance Long Only,5,0.06569343100229931
+Minimum Variance Long Only,6,0.05733795687784127
+Minimum Variance Long Only,7,0.050364218578364615
+Minimum Variance Long Only,8,0.04397527748075923
+Minimum Variance Long Only,9,0.037877681693877105
+Minimum Variance Long Only,10,0.03268428265098718
+Minimum Variance Long Only,11,0.028152092442570154
+Minimum Variance Long Only,12,0.023949983362690754
+Minimum Variance Long Only,13,0.020873492701838244
+Minimum Variance Long Only,14,0.017788452309421922
+Minimum Variance Long Only,15,0.014802977960401177
+HRP,1,0.042010333581170275
+HRP,2,0.0341624942545977
+HRP,3,0.03002668306420128
+HRP,4,0.027558252864358857
+HRP,5,0.025639984937513058
+HRP,6,0.024283912621682117
+HRP,7,0.023050184584521828
+HRP,8,0.022015490543346665
+HRP,9,0.021186147963205608
+HRP,10,0.020325418136757357
+HRP,11,0.019571096005690996
+HRP,12,0.018861339274956042
+HRP,13,0.018247896246430053
+HRP,14,0.017630435372504714
+HRP,15,0.01710150647858731

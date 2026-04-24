@@ -1,0 +1,2 @@
+time_to_assets_ratio,median_offdiag_corr,min_eigenvalue,max_correlation_eigenvalue,mp_lambda_minus,mp_lambda_plus,eigenvalues_above_mp,mp_q_ratio,condition_number
+1.14,0.32244024691199746,9.181295332442526e-07,34.961521145648874,0.00402135929275242,3.7503646056195277,3,0.8771929824561403,182878.5853313619
