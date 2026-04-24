@@ -1022,6 +1022,232 @@ def build_summary_tables(backtest_df: pd.DataFrame, cfg: BacktestConfig) -> tupl
     return performance_df, pd.DataFrame(diff_rows)
 
 
+def _valid_value_months(history: pd.DataFrame, value_column: str) -> pd.DataFrame:
+    if history.empty or value_column not in history or "evaluation_month" not in history:
+        return pd.DataFrame(columns=["evaluation_month", value_column])
+
+    values = history[["evaluation_month", value_column]].copy()
+    values[value_column] = pd.to_numeric(values[value_column], errors="coerce")
+    return values.replace([np.inf, -np.inf], np.nan).dropna(subset=[value_column])
+
+
+def _extreme_value_and_month(
+    history: pd.DataFrame,
+    value_column: str,
+    use_max: bool,
+) -> tuple[float, str]:
+    values = _valid_value_months(history, value_column)
+    if values.empty:
+        return np.nan, ""
+
+    idx = values[value_column].idxmax() if use_max else values[value_column].idxmin()
+    row = values.loc[idx]
+    return float(row[value_column]), str(row["evaluation_month"])
+
+
+def _series_mean(history: pd.DataFrame, value_column: str) -> float:
+    values = _valid_value_months(history, value_column)
+    return float(values[value_column].mean()) if not values.empty else np.nan
+
+
+def _series_median(history: pd.DataFrame, value_column: str) -> float:
+    values = _valid_value_months(history, value_column)
+    return float(values[value_column].median()) if not values.empty else np.nan
+
+
+def _max_drawdown(monthly_returns: pd.Series, evaluation_months: pd.Series) -> tuple[float, str]:
+    valid = pd.DataFrame({
+        "evaluation_month": evaluation_months,
+        "return": pd.to_numeric(monthly_returns, errors="coerce"),
+    }).dropna(subset=["return"])
+    if valid.empty:
+        return np.nan, ""
+
+    wealth = (1.0 + valid["return"]).cumprod()
+    drawdown = wealth / wealth.cummax() - 1.0
+    if drawdown.empty:
+        return np.nan, ""
+
+    idx = drawdown.idxmin()
+    return float(drawdown.loc[idx]), str(valid.loc[idx, "evaluation_month"])
+
+
+def _rolling_annualized_volatility(monthly_returns: pd.Series, window_months: int) -> pd.Series:
+    return pd.to_numeric(monthly_returns, errors="coerce").rolling(window_months).std(ddof=1) * np.sqrt(12.0)
+
+
+def export_comprehensive_results_csv(
+    cfg: BacktestConfig,
+    backtest_df: pd.DataFrame,
+    performance_df: pd.DataFrame,
+    turnover_summary: pd.DataFrame,
+    sspw_summary: pd.DataFrame,
+    condition_history: pd.DataFrame,
+) -> None:
+    """Save one broad CSV with the main model results and timing of extrema."""
+    if backtest_df.empty:
+        print("Springer samlet resultat-CSV over, fordi backtesten er tom.")
+        return
+
+    performance_by_model = performance_df.set_index("Model")
+    turnover_by_model = turnover_summary.set_index("Model") if not turnover_summary.empty else pd.DataFrame()
+    sspw_by_model = sspw_summary.set_index("Model") if not sspw_summary.empty else pd.DataFrame()
+
+    common_t = pd.to_numeric(backtest_df["n_common_sample_months"], errors="coerce")
+    common_context = {
+        "Første evalueringsmåned": str(backtest_df["evaluation_month"].iloc[0]),
+        "Sidste evalueringsmåned": str(backtest_df["evaluation_month"].iloc[-1]),
+        "Lookback-måneder": cfg.lookback_months,
+        "Top N-univers": cfg.top_n_universe,
+        "Kovariansestimering": estimation_mode_label(cfg),
+        "Gennemsnitligt antal market cap-kandidater": float(backtest_df["n_universe_assets"].mean()),
+        "Gennemsnitligt antal aktiver i porteføljen": float(backtest_df["n_eligible_assets"].mean()),
+        "T_common minimum": float(common_t.min()),
+        "T_common median": float(common_t.median()),
+        "T_common gennemsnit": float(common_t.mean()),
+        "T_common maksimum": float(common_t.max()),
+        "Andel måneder med fuldt tilbagebliksvindue": float(common_t.eq(cfg.lookback_months).mean()),
+    }
+
+    condition_context = {}
+    if not condition_history.empty and "condition_number" in condition_history:
+        condition_values = _valid_value_months(condition_history, "condition_number")
+        max_condition, max_condition_month = _extreme_value_and_month(condition_history, "condition_number", use_max=True)
+        min_condition, min_condition_month = _extreme_value_and_month(condition_history, "condition_number", use_max=False)
+        condition_context = {
+            "Konditionstal minimum": min_condition,
+            "Måned for laveste konditionstal": min_condition_month,
+            "Konditionstal gennemsnit": float(condition_values["condition_number"].mean()) if not condition_values.empty else np.nan,
+            "Konditionstal median": float(condition_values["condition_number"].median()) if not condition_values.empty else np.nan,
+            "Konditionstal maksimum": max_condition,
+            "Måned for højeste konditionstal": max_condition_month,
+        }
+
+    rows = []
+    hrp_performance = performance_by_model.loc["HRP"] if "HRP" in performance_by_model.index else pd.Series(dtype=float)
+    for model_name, return_column in MODEL_COLUMNS.items():
+        returns = pd.to_numeric(backtest_df[return_column], errors="coerce")
+        used_returns = returns.dropna()
+        best_return, best_month = _extreme_value_and_month(backtest_df, return_column, use_max=True)
+        worst_return, worst_month = _extreme_value_and_month(backtest_df, return_column, use_max=False)
+        max_drawdown, max_drawdown_month = _max_drawdown(returns, backtest_df["evaluation_month"])
+
+        rolling_sharpe_col = "rolling_sharpe"
+        rolling_sharpe_history = pd.DataFrame({
+            "evaluation_month": backtest_df["evaluation_month"],
+            rolling_sharpe_col: rolling_sharpe_ratio(
+                returns,
+                risk_free_annual=cfg.risk_free_annual,
+                window_months=cfg.rolling_sharpe_window_months,
+            ),
+        })
+        max_rolling_sharpe, max_rolling_sharpe_month = _extreme_value_and_month(
+            rolling_sharpe_history, rolling_sharpe_col, use_max=True,
+        )
+        min_rolling_sharpe, min_rolling_sharpe_month = _extreme_value_and_month(
+            rolling_sharpe_history, rolling_sharpe_col, use_max=False,
+        )
+
+        rolling_vol_col = "rolling_volatility"
+        rolling_vol_history = pd.DataFrame({
+            "evaluation_month": backtest_df["evaluation_month"],
+            rolling_vol_col: _rolling_annualized_volatility(returns, window_months=12),
+        })
+        max_rolling_vol, max_rolling_vol_month = _extreme_value_and_month(
+            rolling_vol_history, rolling_vol_col, use_max=True,
+        )
+        min_rolling_vol, min_rolling_vol_month = _extreme_value_and_month(
+            rolling_vol_history, rolling_vol_col, use_max=False,
+        )
+
+        turnover_column = MODEL_TURNOVER_COLUMNS[model_name]
+        max_turnover, max_turnover_month = _extreme_value_and_month(backtest_df, turnover_column, use_max=True)
+        min_turnover, min_turnover_month = _extreme_value_and_month(backtest_df, turnover_column, use_max=False)
+
+        sspw_column = MODEL_SSPW_COLUMNS[model_name]
+        max_sspw, max_sspw_month = _extreme_value_and_month(backtest_df, sspw_column, use_max=True)
+        min_sspw, min_sspw_month = _extreme_value_and_month(backtest_df, sspw_column, use_max=False)
+
+        row = {
+            "Model": model_name,
+            "Modelnavn": MODEL_PLOT_LABELS.get(model_name, model_name),
+            **common_context,
+            **condition_context,
+            "Antal brugte måneder": int(performance_by_model.loc[model_name, "Used Months"]),
+            "Kumulativt afkast": float(performance_by_model.loc[model_name, "Cumulative Return"]),
+            "Annualiseret afkast": float(performance_by_model.loc[model_name, "Annual Return"]),
+            "Annualiseret volatilitet": float(performance_by_model.loc[model_name, "Annual Volatility"]),
+            "Sharpe-ratio": float(performance_by_model.loc[model_name, "Sharpe Ratio"]),
+            "HRP minus modellen: annualiseret afkast": (
+                float(hrp_performance["Annual Return"] - performance_by_model.loc[model_name, "Annual Return"])
+                if not hrp_performance.empty else np.nan
+            ),
+            "HRP minus modellen: annualiseret volatilitet": (
+                float(hrp_performance["Annual Volatility"] - performance_by_model.loc[model_name, "Annual Volatility"])
+                if not hrp_performance.empty else np.nan
+            ),
+            "HRP minus modellen: Sharpe-ratio": (
+                float(hrp_performance["Sharpe Ratio"] - performance_by_model.loc[model_name, "Sharpe Ratio"])
+                if not hrp_performance.empty else np.nan
+            ),
+            "HRP minus modellen: kumulativt afkast": (
+                float(hrp_performance["Cumulative Return"] - performance_by_model.loc[model_name, "Cumulative Return"])
+                if not hrp_performance.empty else np.nan
+            ),
+            "Månedligt gennemsnitsafkast": float(used_returns.mean()) if not used_returns.empty else np.nan,
+            "Månedligt medianafkast": float(used_returns.median()) if not used_returns.empty else np.nan,
+            "Månedlig standardafvigelse": float(used_returns.std(ddof=1)) if len(used_returns) > 1 else np.nan,
+            "Månedligt minimumsafkast": worst_return,
+            "Måned for minimumsafkast": worst_month,
+            "Månedligt maksimumsafkast": best_return,
+            "Måned for maksimumsafkast": best_month,
+            "Andel positive måneder": float((used_returns > 0).mean()) if not used_returns.empty else np.nan,
+            "Maksimalt drawdown": max_drawdown,
+            "Måned for maksimalt drawdown": max_drawdown_month,
+            f"Rullende {cfg.rolling_sharpe_window_months}-måneders Sharpe gennemsnit": _series_mean(rolling_sharpe_history, rolling_sharpe_col),
+            f"Rullende {cfg.rolling_sharpe_window_months}-måneders Sharpe minimum": min_rolling_sharpe,
+            f"Måned for laveste rullende {cfg.rolling_sharpe_window_months}-måneders Sharpe": min_rolling_sharpe_month,
+            f"Rullende {cfg.rolling_sharpe_window_months}-måneders Sharpe maksimum": max_rolling_sharpe,
+            f"Måned for højeste rullende {cfg.rolling_sharpe_window_months}-måneders Sharpe": max_rolling_sharpe_month,
+            "Rullende 12-måneders volatilitet gennemsnit": _series_mean(rolling_vol_history, rolling_vol_col),
+            "Rullende 12-måneders volatilitet minimum": min_rolling_vol,
+            "Måned for laveste rullende 12-måneders volatilitet": min_rolling_vol_month,
+            "Rullende 12-måneders volatilitet maksimum": max_rolling_vol,
+            "Måned for højeste rullende 12-måneders volatilitet": max_rolling_vol_month,
+            "Gennemsnitlig månedlig omsætning": _series_mean(backtest_df, turnover_column),
+            "Median månedlig omsætning": _series_median(backtest_df, turnover_column),
+            "Minimum månedlig omsætning": min_turnover,
+            "Måned for minimum omsætning": min_turnover_month,
+            "Maksimum månedlig omsætning": max_turnover,
+            "Måned for maksimum omsætning": max_turnover_month,
+            "Samlet omsætning": (
+                float(turnover_by_model.loc[model_name, "Total Turnover"])
+                if not turnover_by_model.empty and model_name in turnover_by_model.index else np.nan
+            ),
+            "Gennemsnitlig SSPW": _series_mean(backtest_df, sspw_column),
+            "Median SSPW": _series_median(backtest_df, sspw_column),
+            "Minimum SSPW": min_sspw,
+            "Måned for minimum SSPW": min_sspw_month,
+            "Maksimum SSPW": max_sspw,
+            "Måned for maksimum SSPW": max_sspw_month,
+            "SSPW-måneder": (
+                int(sspw_by_model.loc[model_name, "SSPW Months"])
+                if not sspw_by_model.empty and model_name in sspw_by_model.index else 0
+            ),
+        }
+
+        if model_name == "Minimum Variance Classical" and "classical_mv_feasible" in backtest_df:
+            row["Mulige måneder for klassisk minimumsvarians"] = int(backtest_df["classical_mv_feasible"].sum())
+        if model_name == "Minimum Variance Long Only" and "long_only_mv_feasible" in backtest_df:
+            row["Mulige måneder for minimumsvarians uden korte positioner"] = int(backtest_df["long_only_mv_feasible"].sum())
+        rows.append(row)
+
+    results = pd.DataFrame(rows)
+    output_path = Path(__file__).with_name("samlede_modelresultater.csv")
+    results.to_csv(output_path, index=False)
+    print(f"Gemt: {output_path}")
+
+
 def print_report(
     cfg: BacktestConfig,
     backtest_df: pd.DataFrame,
@@ -1968,6 +2194,14 @@ def main() -> None:
 
     performance_df, diff_df = build_summary_tables(backtest_df, cfg)
     print_report(cfg, backtest_df, performance_df, diff_df, artifacts.turnover_summary, artifacts.sspw_summary)
+    export_comprehensive_results_csv(
+        cfg,
+        backtest_df,
+        performance_df,
+        artifacts.turnover_summary,
+        artifacts.sspw_summary,
+        artifacts.condition_history,
+    )
     plot_allocation_method_returns(backtest_df, cfg)
     plot_rolling_sharpe_history(backtest_df, cfg)
     plot_rolling_annualized_volatility(backtest_df, cfg)

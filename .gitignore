@@ -10,3 +10,7 @@
 *.synctex.gz
 *.toc
 *.pdf
+.DS_Store
+__pycache__/
+*.pyc
+Lokal analyse/bachelor data v1.csv
