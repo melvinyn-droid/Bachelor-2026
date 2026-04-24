@@ -1,51 +1,96 @@
 % !TEX root = ../main.tex
 % Denne fil kompileres via main.tex.
 \documentclass[../main.tex]{subfiles}
+\usepackage{subcaption}
 \begin{document}
+
 
 \section{Resultater}
 
-Dette afsnit præsenterer de deskriptive resultater, der danner grundlag for den efterfølgende sammenligning af porteføljemetoderne. Først vises konditionstallets udvikling over tid for den rullende stikprøvekovariansmatrix, som indikerer, hvornår klassisk minimum varians forventes at være mest skrøbelig. Dernæst vises et dendrogram og den tilhørende korrelationsmatrix for et udvalgt estimationsvindue, som illustrerer den strukturelle information, HRP bygger sin allokering på.
+Dette afsnit præsenterer de deskriptive resultater, der danner grundlag for den efterfølgende sammenligning af porteføljemetoderne. 
 
-\subsection{Konditionstallets udvikling over tid}
+\subsection{Karakteristisk over datasæt}
+
+Ved brug af månedlig rebalancering, bruges det rullende kondtionstal til at få et bedre indblik i stabiliteten for kovariansmatricen over tid. Figur \ref{fig:condition_number_over_time} viser konditionstallet for hvert evalueringsvindue fra år 2000 og frem. Niveauet er gennem hele perioden højt, af størrelsesorden $10^4$ og opefter. Det er forventeligt, når antallet af gyldige observationer i hvert vindue ($T\approx 118$) måneder, ligger tæt på antallet af aktiver. 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/condition_number_over_time.png}
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/condition_number_over_time.png}
     \caption{Konditionstallet $\kappa(\hat{\Sigma})=\lambda_{\max}/\lambda_{\min}$ for den rullende stikprøvekovariansmatrix i hvert estimationsvindue med 120 måneders lookback. Y-aksen er vist på log-skala.}
     \label{fig:condition_number_over_time}
 \end{figure}
 
-Figur \ref{fig:condition_number_over_time} viser konditionstallet for hvert evalueringsvindue fra 2000 og frem. Niveauet er gennem hele perioden højt, af størrelsesorden $10^4$ og opefter. Det er forventeligt, når antallet af gyldige observationer i hvert vindue ($T_{\text{common}}\approx 118$) ligger tæt på antallet af aktiver: en stikprøvekovariansmatrix med så begrænset margen presser den mindste egenværdi nedad, hvilket Marchenko--Pastur-grænsen angiver som den nedre asymptotiske forventning, og det alene giver et højt baseline-niveau for $\kappa$.
 
-Forløbet er ikke stationært. Frem til ca.\ 2007 svinger $\kappa$ omkring $10^4$ med et lokalt minimum i 2002--2003. Omkring 2008 skifter serien til et markant højere niveau tæt på $10^5$ og forbliver der gennem resten af perioden med en top i 2017--2018. Bemærk at skiftet i 2008 ikke er en kortvarig spike, men et varigt niveaushift: finanskrisens stærkt korrelerede observationer indgår i det rullende vindue lige indtil ca.\ 2018--2019, og det efterfølgende fald frem mod 2020 er konsistent med, at disse observationer gradvist falder ud af estimationen.
 
-Fortolkningsmæssigt afspejler niveauskift og lokale spikes perioder, hvor aktierne i universet i højere grad bevæger sig sammen. Variansen koncentreres i få dominerende retninger, og forholdet mellem $\lambda_{\max}$ og $\lambda_{\min}$ stiger. Effekten rammer især de metoder, som kræver inversion af $\hat{\Sigma}$: i klassisk minimum varians indgår reciprokke egenværdier direkte, og små $\lambda_{\min}$ forstærker estimationsstøjen og gør vægtene følsomme over for små ændringer i data. Equal weight og HRP undgår inversionen og er derfor ikke direkte eksponerede over for dette konditioneringsproblem. Konditionstallet fungerer dermed her som et diagnostisk benchmark for, hvornår vi på forhånd forventer, at klassisk minimum varians udviser stor turnover og ustabile vægte, og hvornår forskellen mellem metoderne bør være mest udtalt.
+Forløbet er ikke stationært. Frem til ca.\ 2007 svinger $\kappa$ omkring $10^4$ med et lokalt minimum i 2002-2003. Omkring 2008 skifter serien til et markant højere niveau tæt på $10^5$ og forbliver der gennem resten af perioden med en top i 2017-2018. Bemærk at skiftet i 2008 ikke er en kortvarigt niveau, men et varigt skift efter finanskrisens stærkt korrelerede observationer indgår i det rullende vindue lige indtil ca.\ 2018-2019, og det efterfølgende fald frem mod 2020 er konsistent med, at disse observationer gradvist falder ud af estimationen. Grundlæggende ser vi at konditionstallet er specielt forhøjet ved kriser og globale fald i aktieuniverset. Dette er en ærgerlig konsekvens, da det vil medføre at i og efter kriseperioder, vil porteføljemetoderne præstere ringere, som følge af systematisk risiko. I disse perioder er det vigtigt at have en yderst diversificeret portefølje.
 
-\subsection{Dendrogram-snapshot}
-
-For at illustrere den hierarkiske struktur, som HRP bygger sin allokering på, vises et snapshot for estimationsvinduet frem til december 2021.
+For HRP illustrerer den hierarkiske struktur i aktieuniverset, som bliver brugt til allokeringen. Da det ikke er muligt at vise dendogrammet over hele evalueringsperioden, vises et snapshot fra december 2021.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/dendrogram_snapshot_2021-12.png}
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/corr_dendrogram_2021-12.png}
     \caption{Dendrogram for estimationsvinduet frem til december 2021. Højden, hvor to grene mødes, svarer til afstanden $d_{ij}=\sqrt{\tfrac{1}{2}(1-\rho_{ij})}$ mellem aktiver eller klynger, og farvelægningen markerer de to største klynger under grænsen omkring $0{,}48$.}
     \label{fig:resultater_dendrogram}
 \end{figure}
 
-I figur \ref{fig:resultater_dendrogram} ses, at den overordnede struktur domineres af to store klynger (markeret i blå og rød), der først flettes sammen højt i træet omkring afstanden $0{,}48$. Før den endelige sammenfletning isoleres enkelte grene som singletons højt oppe i hierarkiet, hvilket indikerer få aktiver, der ikke passer naturligt ind i nogen af de to store grupper. I bunden af træet samles mange aktiver i tætte par omkring afstand $0{,}1$--$0{,}2$, hvilket svarer til parkorrelationer tæt på $0{,}9$. Spredningen fra bunden til toppen afspejler dermed et univers med mange veldefinerede lokale klynger, men uden en ren opdeling i to ligeværdige grupper. De to hovedklynger er desuden asymmetriske i størrelse, hvilket er relevant for den rekursive bisektion, fordi den deler rækkefølgen i lige store dele snarere end på grænsen mellem de to hovedklynger. Dendrogrammet udgør samtidig den permutation, som quasi-diagonaliseringen i det følgende afsnit er baseret på.
 
-\subsection{Korrelationsmatrix før og efter quasi-diagonalisering}
+I figur \ref{fig:resultater_dendrogram} ses en hierarkisk klyngeopdeling baseret på single linkage. Den overordnede struktur er karakteriseret ved en gradvis sammenfletning af aktiver over et bredt interval af afstande, uden en tydelig opdeling i få velafgrænsede hovedklynger. I stedet fremstår træet som relativt fladt i toppen, hvor mange grene først samles ved høje afstande omkring $0{,}5$-$0{,}55$, hvilket indikerer, at en stor del af aktiverne kun er svagt relaterede.
+
+I bunden af dendrogrammet observeres enkelte tætte sammenkoblinger ved afstande omkring $0{,}1$-$0{,}2$, svarende til høje parvise korrelationer. Disse forekommer dog sporadisk og danner ikke større, kompakte klynger. I stedet ses en udpræget kædestruktur, hvor aktiver successivt kobles på eksisterende grupper.
+
+Der identificeres en ujævn og asymmetrisk struktur med mange små delgrupper og enkelte aktiver, der først indgår sent i hierarkiet. Dette indebærer, at der ikke findes en naturlig opdeling af universet i lige store blokke. For den efterfølgende rekursive bisektion i HRP betyder dette, at opdelingen i praksis sker mekanisk langs den ordnede rækkefølge frem for langs klare klyngegrænser.
+
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\linewidth]{Analyse og Resultater/corr_unprocessed_vs_processed_2021-12.png}
-    \caption{Korrelationsmatrix for estimationsvinduet frem til december 2021 ($N=100$ aktiver). Øverst vises matricen i den oprindelige rækkefølge, mens aktiverne nederst er omordnet efter permutationen fra dendrogrammet i figur \ref{fig:resultater_dendrogram}.}
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Analyse og Resultater/Billeder/corr_unsorted_2021-12.png}
+        \caption{Oprindelig rækkefølge}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{Analyse og Resultater/Billeder/corr_sorted_2021-12.png}
+        \caption{Omordnet efter dendrogram}
+    \end{subfigure}
+    
+    \caption{Korrelationsmatrix for estimationsvinduet frem til december 2021 ($N=100$ aktiver). Til venstre ses matricen i den oprindelige rækkefølge, mens den til højre er omordnet efter permutationen fra dendrogrammet i figur \ref{fig:resultater_dendrogram}.}
     \label{fig:resultater_korrelationsmatrice}
 \end{figure}
 
-Figur \ref{fig:resultater_korrelationsmatrice} viser den samme information som dendrogrammet i en anden repræsentation. I den ikke-behandlede matrix (øverst) fordeler korrelationerne sig tilsyneladende uden systematisk mønster, selvom niveauet gennemgående er højt. Efter quasi-diagonaliseringen (nederst) samles de høje korrelationer i sammenhængende blokke omkring diagonalen, og særligt i den nedre højre kvadrant ses en markant tæt blok af stærkt korrelerede aktiver. Dette er den blokstruktur, HRP rekursivt opdeler ved bisektionen: hver opdeling på den sorterede rækkefølge svarer til et snit mellem klynger i dendrogrammet, og det er denne egenskab, der gør allokeringen meningsfuld uden inversion af kovariansmatrixen.
+Figur \ref{fig:resultater_korrelationsmatrice} viser den samme information som dendrogrammet i en anden repræsentation. I den ikke-behandlede matrix (øverst) fordeler korrelationerne sig tilsyneladende uden systematisk mønster, selvom niveauet gennemgående er højt. Efter quasi-diagonaliseringen (nederst) samles de høje korrelationer i sammenhængende blokke omkring diagonalen, og særligt i midten ses en markant tæt blok af stærkt korrelerede aktiver. Dette er den blokstruktur, HRP rekursivt opdeler ved bisektionen, hver opdeling på den sorterede rækkefølge svarer til et snit mellem klynger i dendrogrammet, og det er denne egenskab, der gør allokeringen meningsfuld uden inversion af kovariansmatrixen.
 
-Den samme figur forklarer samtidig, hvorfor konditionstallet i figur \ref{fig:condition_number_over_time} er højt i netop dette vindue. En dominerende blok af aktiver med fælles korrelationsniveau betyder, at en stor del af variansen koncentreres i få fælles retninger, mens de resterende retninger har små egenværdier. Det er den samme strukturelle mekanisme, som i teoriafsnittet blev beskrevet som klyngeinduceret ustabilitet, og den forbinder dermed de to figurer: stærke klynger i dendrogrammet er den samme egenskab ved data, som driver konditionstallet opad. Forskellen er, at hvor klassisk minimum varians ``straffes'' af disse blokke gennem inversionen af $\hat{\Sigma}$, anvender HRP dem aktivt som basis for allokeringen.
+Den samme figur forklarer samtidig, hvorfor konditionstallet i figur \ref{fig:condition_number_over_time} er højt i netop dette vindue. En dominerende blok af aktiver med fælles korrelationsniveau betyder, at en stor del af variansen koncentreres i få fælles retninger, mens de resterende retninger har små egenværdier.
+
+\subsection{Vægtallokering}
+
+En central del af analysen er undersøgelsen af vægtfordelingen på tværs af de forskellige porteføljestrategier. Vægtallokeringen giver indsigt i graden af diversifikation og koncentration, hvilket er afgørende for porteføljens robusthed.
+
+Resultaterne viser, at de klassiske optimeringsbaserede porteføljer, særligt minimum-varians udviser en høj grad af koncentration. Dette fremgår ved, at maksimumvægtene i disse porteføljer er markant højere end for de øvrige strategier, mens minimumsvægtene ofte er tæt på nul. Dette indebærer, at en stor del af kapitalen allokeres til få aktiver. Samtidig ses, at disse porteføljer i flere tilfælde ikke allokere nogen vægt til en betydelig andel af aktiverne, hvilket reducerer den effektive diversifikation.
+
+I kontrast, viser modellen, såsom Equal weights (1/N)  en langt mere jævn vægtfordeling. Her er forskellen mellem maksimum- og minimumsvægte væsentligt mindre, hvilket afspejler en mere ensartet kapitalallokering. Dog tager disse metoder ikke direkte højde for den underliggende korrelationsstruktur mellem aktiverne og kan derfor være udsatte ift udsving som påvirker hele sektorer. 
+
+HRP-porteføljen placerer sig mellem disse to yderpunkter. Resultaterne viser, at HRP reducerer koncentrationen betydeligt sammenlignet med optimeringsmetoderne, men samtidig bevarer en vis differentiering i vægtene. Eksempelvis er maksimumvægtene lavere end for minimum-varians porteføljen, mens minimumsvægtene er højere, hvilket indikerer en mere balanceret allokering. Dette stemmer overens med metodens opbygning, hvor vægte tildeles på baggrund af klynger frem for individuelle aktiver. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/average_top_weight_distribution.png}
+    \caption{}
+    \label{fig:condition_number_over_time}
+\end{figure}
+
+Dette understøttes yderligere af SSPW-målet (Sum of Squared Portfolio Weights), hvor HRP generelt opnår lavere værdier end de mest koncentrerede porteføljer, men højere værdier end 1/N-porteføljen. Det viser at HRP opnår en mellemting mellem fuld diversifikation og koncentration.
+
+Samlet set viser resultaterne, at HRP skaber mere diversificerede porteføljer end traditionelle optimeringsmetoder. Hvor de klassiske metoder har tendens til at koncentrere vægtene i få aktiver, formår de hierarkiske metoder at fordele risikoen mere jævnt på tværs af både aktiver og klynger. Dette indikerer, at inddragelsen af hierarkisk struktur i porteføljekonstruktionen bidrager til en mere robust og stabil vægtallokering.
+
+\subsubsection{Afkastmål}
+
+
+\subsubsection{Volatilitet og Sharpe Ratio}
+
+
+
+\subsubsection{Turnover}
+
 
 \end{document}
