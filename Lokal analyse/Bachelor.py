@@ -29,9 +29,9 @@ DATA_PATH = Path(__file__).with_name("bachelor data v1.csv")
 
 DEFAULT_LOOKBACK_MONTHS = 120
 DEFAULT_TOP_N_UNIVERSE = 100
-DEFAULT_ROLLING_SHARPE_WINDOW_MONTHS = 24
+DEFAULT_ROLLING_SHARPE_WINDOW_MONTHS = 12
 DEFAULT_LONG_ONLY_MV_MAXITER = 20000
-DEFAULT_WEIGHT_SNAPSHOT_MONTH = "2015-05"
+DEFAULT_WEIGHT_SNAPSHOT_MONTH = "2021-12"
 DEFAULT_WEIGHT_DISTRIBUTION_TOP_N = 15
 MODEL_COLUMNS = {
     "Equal Weight": "ret_equal_weight",
@@ -1729,26 +1729,39 @@ def plot_turnover_history(turnover_history: pd.DataFrame, cfg: BacktestConfig) -
         return
 
     plot_history = add_evaluation_dates(turnover_history)
-    output_path = Path(__file__).with_name("turnover_over_time.png")
-    fig, ax = plt.subplots(figsize=(12, 6))
-    for label in MODEL_COLUMNS:
-        ax.plot(
-            plot_history["evaluation_date"],
-            plot_history[label],
-            linewidth=1.8,
-            label=MODEL_PLOT_LABELS.get(label, label),
-            color=MODEL_COLORS[label],
-        )
 
-    ax.set_title("Porteføljeomsætning over tid", pad=18)
-    add_plot_subtitle(ax, effective_t_caption(turnover_history, cfg))
-    ax.set_xlabel("Evalueringsmåned")
-    ax.set_ylabel("Omsætning")
-    ax.grid(alpha=0.25)
-    ax.legend(loc="best")
-    fig.autofmt_xdate()
-    fig.tight_layout()
-    _save_fig(fig, output_path)
+    def save_turnover_plot(model_order: list[str], output_filename: str, title: str) -> None:
+        output_path = Path(__file__).with_name(output_filename)
+        fig, ax = plt.subplots(figsize=(12, 6))
+        for label in model_order:
+            ax.plot(
+                plot_history["evaluation_date"],
+                plot_history[label],
+                linewidth=1.8,
+                label=MODEL_PLOT_LABELS.get(label, label),
+                color=MODEL_COLORS[label],
+            )
+
+        ax.set_title(title, pad=18)
+        add_plot_subtitle(ax, effective_t_caption(turnover_history, cfg))
+        ax.set_xlabel("Evalueringsmåned")
+        ax.set_ylabel("Omsætning")
+        ax.grid(alpha=0.25)
+        ax.legend(loc="best")
+        fig.autofmt_xdate()
+        fig.tight_layout()
+        _save_fig(fig, output_path)
+
+    save_turnover_plot(
+        list(MODEL_COLUMNS.keys()),
+        "turnover_over_time.png",
+        "Porteføljeomsætning over tid",
+    )
+    save_turnover_plot(
+        [model for model in MODEL_COLUMNS if model != "Minimum Variance Classical"],
+        "turnover_over_time_without_classical_mv.png",
+        "Porteføljeomsætning over tid uden klassisk minimumsvarians",
+    )
 
 
 def print_sspw_summary(sspw_summary: pd.DataFrame) -> None:
