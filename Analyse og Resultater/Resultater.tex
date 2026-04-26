@@ -92,64 +92,103 @@ Samlet set viser resultaterne, at HRP skaber mere diversificerede porteføljer e
 \subsubsection{Afkastmål}
 
 
-\subsubsection{Volatilitet og Sharpe Ratio}
+\subsubsection{Volatilitet og Sharpe ratio}
 
-Når vi kigger nærmere på volatiliteten for porteføljemetoderne med en rullende 12 måneders volatilitet, ses det, at den klassiske minimum varians portefølje generelt ligger på et væsentligt højere niveau end de øvrige porteføljer. Over hele evalueringsperioden har den en gennemsnitlig annualiseret volatilitet på 23,28\%, hvilket er markant højere end både Equal Weights (14,68\%), HRP (12,30\%) og Minimum Varians Long Only (11,01\%). 
+Når vi kigger nærmere på volatiliteten for porteføljemetoderne med en rullende 12-måneders volatilitet, ses det, at den klassiske minimumsvariansportefølje generelt ligger på et væsentligt højere niveau end de øvrige porteføljer. Over hele evalueringsperioden har den en annualiseret volatilitet på 23,28\%, hvilket er markant højere end både Ligevægt (14,68\%), HRP (12,30\%) og Minimumsvarians uden korte positioner (11,01\%).
 
-Dette ses også tydeligt i figur \ref{fig:volatilitet_over_tid}, hvor den klassiske MV portefølje topper med en volatilitet på omkring 40\% under finanskrisen. Equal Weight porteføljen følger i højere grad markedets udsving, men ligger generelt lavere end den klassiske MV. 
+Dette ses også tydeligt i figur \ref{fig:volatilitet_over_tid}, hvor den klassiske minimumsvariansportefølje topper med en volatilitet på omkring 40\% under finanskrisen. Ligevægtsporteføljen følger i højere grad markedets udsving, men ligger generelt lavere end den klassiske minimumsvariansportefølje.
 
-Dernæst kan det observeres, at Minimum Varians Long Only ligger på et generelt lavere niveau end HRP porteføljen. Specielt i perioder med store udsving præsterer den mere stabilt end de øvrige porteføljer. Dermed er MVLO den portefølje, der har lavest volatilitet blandt alle. HRP porteføljen følger langt hen ad vejen MVLO, men leverer generelt en lidt højere volatilitet i udsvingene. 
+Dernæst kan det observeres, at Minimumsvarians uden korte positioner ligger på et generelt lavere niveau end HRP-porteføljen. Specielt i perioder med store udsving præsterer den mere stabilt end de øvrige porteføljer. Dermed er minimumsvarians uden korte positioner den portefølje, der har lavest volatilitet blandt alle. HRP-porteføljen følger langt hen ad vejen samme mønster, men leverer generelt en lidt højere volatilitet i udsvingene.
 
 Resultaterne stemmer overens med det teoretiske, da MVLO direkte minimerer variansen under restriktioner, mens HRP i stedet fordeler risiko og derfor ikke nødvendigvis opnår samme lave niveau.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/rolling_annualized_volatility_over_time.png}
-    \caption{}
+    \caption{Rullende 12-måneders annualiseret volatilitet for porteføljemetoderne.}
     \label{fig:volatilitet_over_tid}
 \end{figure}
 
-Når vi kigger på Sharpe ratioen (rullende 12 måneder), er det nogle andre mønstre, der bliver tydeligere. Over hele perioden opnår minimum varians long only den højeste Sharpe ratio på 0,856, efterfulgt af HRP med 0,729. Ligevægt ligger på 0,587, mens den klassiske minimum varians portefølje ligger markant lavere på 0,357.
+Når vi kigger på Sharpe ratioen, bliver nogle andre mønstre tydelige. Over hele perioden opnår minimumsvarians uden korte positioner den højeste samlede Sharpe ratio på 0,856, efterfulgt af HRP med 0,729. Ligevægt ligger på 0,587, mens den klassiske minimumsvariansportefølje ligger markant lavere på 0,357.
 
-I figur \ref{fig:Sharpe-ratio_over_tid} ses det denne gang, at HRP og Equal Weight porteføljerne i høj grad følger hinanden og reagerer på de samme markedsudsving. HRP ligger dog generelt lidt højere, hvilket indikerer en bedre risikojusteret performance. 
+I figur \ref{fig:sharpe_ratio_over_tid} ses den rullende 12-måneders Sharpe ratio. HRP og ligevægtsporteføljen følger i høj grad hinanden og reagerer på de samme markedsudsving. HRP ligger dog generelt lidt højere, hvilket indikerer en bedre risikojusteret performance.
 
-Minimum varians long only porteføljen adskiller sig ved at være mere stabil og samlet set levere den højeste Sharpe ratio. Den klassiske minimum varians portefølje performer derimod generelt svagt, hvilket hænger sammen med den høje volatilitet observeret tidligere. Dog med enkelte frekvenser er det den bedst præsterende portefølje, hvilket tyder på at i disse perioder kan den estimeret kovariansmatrix være mindre udsat for numerisk ustabilitet. 
+Minimumsvarians uden korte positioner adskiller sig ved samlet set at levere den højeste Sharpe ratio, mens HRP har det højeste gennemsnit for den rullende 12-måneders Sharpe ratio på 1,185. Den klassiske minimumsvariansportefølje performer derimod generelt svagt, hvilket hænger sammen med den høje volatilitet observeret tidligere. I enkelte perioder er den dog konkurrencedygtig, hvilket tyder på, at kovariansestimatet i disse perioder er mindre præget af numerisk ustabilitet.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/rolling_sharpe_ratio_over_time.png}
-    \caption{}
-    \label{fig:Sharpe-ratio_over_tid}
+    \caption{Rullende 12-måneders Sharpe ratio for porteføljemetoderne.}
+    \label{fig:sharpe_ratio_over_tid}
 \end{figure}
 
 \begin{table}[H]
 \centering
 \caption{Oversigt over volatilitet og Sharpe ratio}
 \label{tab:resultater_vol_sharpe}
-\begin{tabular}{lcc}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccc}
 \toprule
-Portefølje & Annualiseret volatilitet & Sharpe ratio \\
+Portefølje & Ann. volatilitet & Sharpe ratio & Gns. 12 mdr. Sharpe & Min. 12 mdr. Sharpe & Maks. 12 mdr. Sharpe \\
 \midrule
-Equal Weights& 14,68\% & 0,587 \\
-Klassisk minimum varians & 23,28\% & 0,357 \\
-Minimum varians long only & 11,01\% & 0,856 \\
-HRP & 12,30\% & 0,729 \\
+Ligevægt & 14,68\% & 0,587 & 1,090 & -1,889 & 5,022 \\
+Klassisk minimumsvarians & 23,28\% & 0,357 & 0,754 & -1,384 & 4,567 \\
+Minimumsvarians uden korte positioner & 11,01\% & 0,856 & 1,135 & -1,873 & 4,332 \\
+HRP & 12,30\% & 0,729 & 1,185 & -1,814 & 4,306 \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
 \subsubsection{Turnover}
+
+Turnover måler, hvor meget porteføljen skal handles ved hver rebalancering, efter at de tidligere vægte først er blevet justeret for den realiserede månedsafkastudvikling. Dermed afspejler målet både ændringer i det valgte aktieunivers og ændringer i selve allokeringen.
+
+Figur \ref{fig:turnover_over_tid} viser, at den klassiske minimumsvariansportefølje har en markant højere omsætning end de øvrige metoder. Den gennemsnitlige månedlige turnover er 6,509, og den samlede turnover over perioden er 1562,05. Dette er en direkte konsekvens af, at den ubegrænsede minimumsvariansløsning er meget følsom over for små ændringer i kovariansmatricen og samtidig tillader store positive og negative positioner.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/turnover_over_time.png}
-    \caption{}
-    \label{fig:volatilitet_over_tid}
+    \caption{Porteføljeomsætning over tid for alle porteføljemetoder.}
+    \label{fig:turnover_over_tid}
 \end{figure}
+
+Fordi den klassiske minimumsvariansportefølje dominerer skalaen, vises de øvrige metoder separat i figur \ref{fig:turnover_over_tid_uden_klassisk_mv}. Her ses det, at HRP og minimumsvarians uden korte positioner ligger tættere på hinanden, med gennemsnitlig månedlig turnover på henholdsvis 0,302 og 0,274. Ligevægt har lavest omsætning med 0,102 i gennemsnit pr. måned, men den er ikke nul, fordi aktieuniverset opdateres løbende.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/turnover_over_time_without_classical_mv.png}
+    \caption{Porteføljeomsætning over tid uden klassisk minimumsvarians.}
+    \label{fig:turnover_over_tid_uden_klassisk_mv}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Oversigt over månedlig turnover}
+\label{tab:resultater_turnover}
+\begin{tabular}{lccc}
+\toprule
+Portefølje & Gns. månedlig turnover & Median månedlig turnover & Samlet turnover \\
+\midrule
+Ligevægt & 0,102 & 0,093 & 24,42 \\
+Klassisk minimumsvarians & 6,509 & 6,184 & 1562,05 \\
+Minimumsvarians uden korte positioner & 0,274 & 0,201 & 65,88 \\
+HRP & 0,302 & 0,300 & 72,60 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsubsection{Effekt af kovariansestimatet}
+
+Figur \ref{fig:sharpe_vs_t_fixed_n} viser, hvordan Sharpe ratioen ændrer sig, når længden af estimationsvinduet $T$ varieres, mens antallet af aktiver holdes fast. Formålet er at isolere betydningen af kovariansestimatets tidsdimension: Når $T$ er lavt relativt til $N$, bliver kovariansmatricen mere støjfyldt og tættere på singulær. Det rammer især metoder, der afhænger direkte af inversion eller numerisk optimering på kovariansmatricen. Den klassiske minimumsvariansportefølje forventes derfor at være mest ustabil, mens HRP bør være mere robust, fordi metoden bruger korrelationsstrukturen og rekursiv klyngeallokering frem for direkte matrixinversion.
+
+Når $T$ stiger, bør kovariansestimatet alt andet lige blive mere stabilt, fordi det bygger på flere observationer. Det betyder dog ikke, at alle metoder nødvendigvis forbedres monotont. I implementeringen udvælges universet på ny for hvert evalueringsvindue: Først rangeres aktier efter market cap måneden før evaluering, og derefter beholdes kun aktier, der har tilstrækkeligt mange gyldige observationer i det konkrete lookback-vindue. Med \texttt{min\_estimation\_obs\_ratio = 0{,}95} og complete-case filtrering kan et længere $T$ derfor ændre, hvilke aktier der overhovedet indgår i de 100 valgte aktiver. Det er grunden til, at ligevægtsporteføljen også kan ændre performance, selvom dens vægte altid er $1/N$ inden for det valgte univers. Den investerer ikke nødvendigvis i præcis de samme aktier, og evalueringsperioden kan også blive påvirket af kravet om historiske observationer.
+
+Resultatet skal derfor læses som en samlet effekt af et mere stabilt kovariansestimat og en ændret datatilgængelighed/aktiesammensætning. Hvis HRP klarer sig relativt bedre ved lave $T$-værdier, understøtter det hypotesen om, at hierarkisk porteføljekonstruktion er mere robust over for støj i kovariansmatricen. Hvis minimumsvarians uden korte positioner forbedres ved højere $T$, er det konsistent med, at optimeringen får et mere stabilt input, samtidig med at long-only-restriktionen begrænser de mest ekstreme vægte.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/sharpe_vs_T_fixed_N.png}
-    \caption{}
-    \label{fig:volatilitet_over_tid}
+    \caption{Sharpe ratio ved varierende estimationsvindue $T$ og fast antal aktiver $N$.}
+    \label{fig:sharpe_vs_t_fixed_n}
 \end{figure}
 \end{document}
