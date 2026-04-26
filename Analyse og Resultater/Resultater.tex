@@ -65,18 +65,24 @@ Den samme figur forklarer samtidig, hvorfor konditionstallet i figur \ref{fig:co
 
 \subsection{Vægtallokering}
 
-En central del af analysen er undersøgelsen af vægtfordelingen på tværs af de forskellige porteføljestrategier. Vægtallokeringen giver indsigt i graden af diversifikation og koncentration, hvilket er afgørende for porteføljens robusthed.
+En central del af analysen er undersøgelsen af vægtfordelingen på tværs af de forskellige porteføljemodeller. Vægtallokeringen giver indsigt i graden af diversifikation og koncentration, hvilket er afgørende for porteføljens robusthed. For at få en overordnet ide om hvordan de forskellige metoder har allokeret aktiver har vi valgt at visualisere dem vha. cirkeldiagrammer. I figuren \ref{Komplet allokerings distribution for porteføljemodellerne} ses den markante forskel i allokeringsvægte for hver model. 
 
-Resultaterne viser, at de klassiske optimeringsbaserede porteføljer, særligt minimum-varians udviser en høj grad af koncentration. Dette fremgår ved, at maksimumvægtene i disse porteføljer er markant højere end for de øvrige strategier, mens minimumsvægtene ofte er tæt på nul. Dette indebærer, at en stor del af kapitalen allokeres til få aktiver. Samtidig ses, at disse porteføljer i flere tilfælde ikke allokere nogen vægt til en betydelig andel af aktiverne, hvilket reducerer den effektive diversifikation.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/weight_snapshot_2015-05.png}
+    \caption{}
+    \label{Komplet allokerings distribution for porteføljemodellerne i 2021/12}
+\end{figure}
+Resultaterne, i figur \ref{Gennemsnits vægtdistribution af top 15 aktiver}, viser at de klassiske optimeringsbaserede porteføljer, særligt minimum-varians udviser en høj grad af koncentration. Dette fremgår ved, at maksimumvægtene i disse porteføljer er markant højere end for de øvrige modeller, mens minimumsvægtene ofte er tæt på nul. Dette indebærer, at en stor del af kapitalen allokeres til få aktiver. Samtidig ses, at disse porteføljer i flere tilfælde ikke allokere nogen vægt til en betydelig andel af aktiverne, hvilket reducerer den effektive diversifikation.
 
-I kontrast, viser modellen, såsom Equal weights (1/N)  en langt mere jævn vægtfordeling. Her er forskellen mellem maksimum- og minimumsvægte væsentligt mindre, hvilket afspejler en mere ensartet kapitalallokering. Dog tager disse metoder ikke direkte højde for den underliggende korrelationsstruktur mellem aktiverne og kan derfor være udsatte ift udsving som påvirker hele sektorer. 
+I kontrast, viser modellen Equal weights (1/N)  en langt mere jævn vægtfordeling. Dette er intuitivt, da vægtningen er fastsat og lige for alle aktiver. Det afspejler en ensartet kapitalallokering. Dog tager disse metoder ikke direkte højde for den underliggende korrelationsstruktur mellem aktiverne og kan derfor være udsatte for udsving der påvirker hele sektorer. 
 
 HRP-porteføljen placerer sig mellem disse to yderpunkter. Resultaterne viser, at HRP reducerer koncentrationen betydeligt sammenlignet med optimeringsmetoderne, men samtidig bevarer en vis differentiering i vægtene. Eksempelvis er maksimumvægtene lavere end for minimum-varians porteføljen, mens minimumsvægtene er højere, hvilket indikerer en mere balanceret allokering. Dette stemmer overens med metodens opbygning, hvor vægte tildeles på baggrund af klynger frem for individuelle aktiver. 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/average_top_weight_distribution.png}
     \caption{}
-    \label{fig:condition_number_over_time}
+    \label{Gennemsnits vægtdistribution af top 15 aktiver}
 \end{figure}
 
 Dette understøttes yderligere af SSPW-målet (Sum of Squared Portfolio Weights), hvor HRP generelt opnår lavere værdier end de mest koncentrerede porteføljer, men højere værdier end 1/N-porteføljen. Det viser at HRP opnår en mellemting mellem fuld diversifikation og koncentration.
@@ -88,12 +94,13 @@ Samlet set viser resultaterne, at HRP skaber mere diversificerede porteføljer e
 
 \subsubsection{Volatilitet og Sharpe Ratio}
 
+Når vi kigger nærmere på volatiliteten for porteføljemetoderne med en rullende 12 måneders volatilitet, ses det, at den klassiske minimum varians portefølje generelt ligger på et væsentligt højere niveau end de øvrige porteføljer. Over hele evalueringsperioden har den en gennemsnitlig annualiseret volatilitet på 23,28\%, hvilket er markant højere end både Equal Weights (14,68\%), HRP (12,30\%) og Minimum Varians Long Only (11,01\%). 
 
-Når vi kigger nærmere på volatiliteten for porteføljemetoderne ses at Minimum varians porteføljen generelt præstere på et langt højere niveau end de andre porteføljer. Klassisk minimum varians topper med en volatilitet på 40% omkring 2009.
-Equal Weight porteføljen følger markedet og ligger generelt på et langt lavere niveau end Klassisk MV, med en gennemsnitlig volatilitet på xxx.
+Dette ses også tydeligt i figur \ref{fig:volatilitet_over_tid}, hvor den klassiske MV portefølje topper med en volatilitet på omkring 40\% under finanskrisen. Equal Weight porteføljen følger i højere grad markedets udsving, men ligger generelt lavere end den klassiske MV. 
 
-Dernæst kan der observeres at Minimum Varians long only ligger på et generelt lavere niveau end HRP porteføljen.  Specielt i volatilitetudsvingene som markedsporteføljen, equal weight, er udsat for præsterer den langt bedre end de andre porteføljer. Dermed er MVLO porteføljen den portefølje der har lavest volatilitet blandt alle. HRP porteføljen følger langt hen ad vejen MVLO porteføljen, men leverer generelt højere volatilitet i udsvingenel 
-Resultaterne stemmer overens med det teoretiske, da MVLO går netop ud på at minimere variansen for porteføljen. Hvorimod HRP er en risikoallokeringsmetode. 
+Dernæst kan det observeres, at Minimum Varians Long Only ligger på et generelt lavere niveau end HRP porteføljen. Specielt i perioder med store udsving præsterer den mere stabilt end de øvrige porteføljer. Dermed er MVLO den portefølje, der har lavest volatilitet blandt alle. HRP porteføljen følger langt hen ad vejen MVLO, men leverer generelt en lidt højere volatilitet i udsvingene. 
+
+Resultaterne stemmer overens med det teoretiske, da MVLO direkte minimerer variansen under restriktioner, mens HRP i stedet fordeler risiko og derfor ikke nødvendigvis opnår samme lave niveau.
 
 \begin{figure}[H]
     \centering
@@ -102,7 +109,11 @@ Resultaterne stemmer overens med det teoretiske, da MVLO går netop ud på at mi
     \label{fig:volatilitet_over_tid}
 \end{figure}
 
+Når vi kigger på Sharpe ratioen (rullende 12 måneder), er det nogle andre mønstre, der bliver tydeligere. Over hele perioden opnår minimum varians long only den højeste Sharpe ratio på 0,856, efterfulgt af HRP med 0,729. Ligevægt ligger på 0,587, mens den klassiske minimum varians portefølje ligger markant lavere på 0,357.
 
+I figur \ref{fig:Sharpe-ratio_over_tid} ses det denne gang, at HRP og Equal Weight porteføljerne i høj grad følger hinanden og reagerer på de samme markedsudsving. HRP ligger dog generelt lidt højere, hvilket indikerer en bedre risikojusteret performance. 
+
+Minimum varians long only porteføljen adskiller sig ved at være mere stabil og samlet set levere den højeste Sharpe ratio. Den klassiske minimum varians portefølje performer derimod generelt svagt, hvilket hænger sammen med den høje volatilitet observeret tidligere. Dog med enkelte frekvenser er det den bedst præsterende portefølje, hvilket tyder på at i disse perioder kan den estimeret kovariansmatrix være mindre udsat for numerisk ustabilitet. 
 
 \begin{figure}[H]
     \centering
@@ -111,7 +122,34 @@ Resultaterne stemmer overens med det teoretiske, da MVLO går netop ud på at mi
     \label{fig:Sharpe-ratio_over_tid}
 \end{figure}
 
+\begin{table}[H]
+\centering
+\caption{Oversigt over volatilitet og Sharpe ratio}
+\label{tab:resultater_vol_sharpe}
+\begin{tabular}{lcc}
+\toprule
+Portefølje & Annualiseret volatilitet & Sharpe ratio \\
+\midrule
+Equal Weights& 14,68\% & 0,587 \\
+Klassisk minimum varians & 23,28\% & 0,357 \\
+Minimum varians long only & 11,01\% & 0,856 \\
+HRP & 12,30\% & 0,729 \\
+\bottomrule
+\end{tabular}
+\end{table}
 \subsubsection{Turnover}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/turnover_over_time.png}
+    \caption{}
+    \label{fig:volatilitet_over_tid}
+\end{figure}
+\subsubsection{Effekt af kovariansestimatet}
 
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\linewidth]{Analyse og Resultater/Billeder/sharpe_vs_T_fixed_N.png}
+    \caption{}
+    \label{fig:volatilitet_over_tid}
+\end{figure}
 \end{document}
